@@ -533,7 +533,7 @@ public class FaceDetect extends AppCompatActivity
 
             if ( matResult == null )
                 matResult = new Mat(matInput.rows(), matInput.cols(), matInput.type());
-
+            Log.d("aa","aa");
             Core.flip(matInput, matInput, 1);
 
             detect(cascadeClassifier_face,cascadeClassifier_eye, matInput.getNativeObjAddr(),
