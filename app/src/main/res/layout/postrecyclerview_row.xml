@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:orientation="horizontal"
+    android:weightSum="10">
+
+    <ImageView
+        android:id="@+id/post_image"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:src="@drawable/postbusimage"
+        android:layout_weight="2"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_marginLeft="15dp"
+        android:orientation="vertical"
+        android:layout_weight="6"
+        android:weightSum="2">
+        <TextView
+            android:id="@+id/post_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="date"
+            android:layout_weight="1"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/post_where"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
+                android:text="where"/>
+
+            <TextView
+                android:id="@+id/post_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="level"/>
+        </LinearLayout>
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/post_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp" />
+</LinearLayout>

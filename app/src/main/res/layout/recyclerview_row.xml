@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/round">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white">
+        <TextView
+            android:id="@+id/post_day"
+            android:text="day"
+            android:textSize="20dp"
+            android:textColor="@color/colorPrimary"
+            android:padding="2dp"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/round"/>
+        <!--<ImageView-->
+        <!--android:id="@+id/post_image"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:gravity="center"-->
+        <!--android:src="@drawable/chart"-->
+        <!--android:layout_weight="1"/>-->
+
+        <TextView
+            android:id="@+id/post_level"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/post_comp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="10dp"
+            android:text="ddd"
+            android:textSize="15sp"
+            android:textColor="@drawable/black"/>
+
+        <TextView
+            android:id="@+id/post_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="53dp"
+            android:layout_weight="1"
+            android:text="bbb"
+            android:textSize="15sp"
+            android:textColor="@drawable/black"/>
+
+        <TextView
+            android:id="@+id/post_comp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/post_date"
+            android:layout_weight="1"
+            android:text="ccc"
+            android:textSize="15sp"
+            android:textColor="@drawable/black"/>
+
+        <TextView
+            android:id="@+id/post_info"
+            android:layout_width="322dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="52dp"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:text="aaa"
+            android:textSize="20sp"
+            android:textColor="@drawable/black"/>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="77dp"
+            android:background="@color/darkgray" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

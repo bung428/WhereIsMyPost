@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp">
+            <TextView
+                android:textColor="@drawable/black"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_weight="1"
+                android:gravity="left|center"
+                android:layout_marginLeft="15dp"
+                android:text="택배사"/>
+
+            <TextView
+                android:id="@+id/tvSelect"
+                android:layout_width="225dp"
+                android:layout_height="45dp"
+                android:layout_weight="4"
+                android:text="택배사를 선택해주세요"
+                android:textColor="@drawable/black"
+                android:layout_marginRight="15dp"
+                android:textSize="15dp" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:textColor="@drawable/black"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_weight="1"
+                android:gravity="left|center"
+                android:layout_marginLeft="15dp"
+                android:text="송장번호"/>
+
+            <EditText
+                android:id="@+id/postNum"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:hint="정확하게 입력해야 해요"
+                android:layout_marginRight="15dp"
+                android:layout_weight="4"/>
+        </TableRow>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@color/colorPrimaryDark" />
+
+    </TableLayout>
+
+</RelativeLayout>

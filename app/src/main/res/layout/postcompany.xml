@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/tvCj"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:layout_marginLeft="15dp"
+            android:background="@android:color/transparent"
+            android:text="CJ대한통운"/>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@color/darkgray" />
+
+        <Button
+            android:id="@+id/tvHanjin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:layout_marginLeft="15dp"
+            android:background="@android:color/transparent"
+            android:text="한진택배"/>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@color/darkgray" />
+
+        <!--<Button-->
+            <!--android:id="@+id/tvLotte"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="롯데택배"/>-->
+
+        <!--<View-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:layout_marginRight="15dp"-->
+            <!--android:background="@color/darkgray" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/tvPost"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="우체국택배"/>-->
+
+        <!--<View-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:layout_marginRight="15dp"-->
+            <!--android:background="@color/darkgray" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/tvLozen"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="로젠택배"/>-->
+
+        <!--<View-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:layout_marginRight="15dp"-->
+            <!--android:background="@color/darkgray" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/tvDream"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="드림택배"/>-->
+
+        <!--<View-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:layout_marginRight="15dp"-->
+            <!--android:background="@color/darkgray" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/tvKGB"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="KGB택배"/>-->
+
+        <!--<View-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:layout_marginRight="15dp"-->
+            <!--android:background="@color/darkgray" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/tvIlyang"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="25dp"-->
+            <!--android:layout_marginLeft="15dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="일양로지스"/>-->
+
+
+    </LinearLayout>
+</ScrollView>
