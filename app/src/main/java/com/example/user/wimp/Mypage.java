@@ -101,11 +101,13 @@ public class Mypage extends AppCompatActivity {
         }else if (intent.getStringExtra("profile") != null) {
             profile = intent.getStringExtra("profile");
             Log.d("프로필이미지의 행방", profile + " 이건데 왔나???");
+            String[] data = profile.split("://");
+            Log.d("프로필 이미지", data[1]);
+            mypage_profile.setImageURI(Uri.parse(data[1]));
+//            Intent i = new Intent(Mypage.this, Mypage.class);
+//            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            startActivity(i);
 
-            Intent i = new Intent(Mypage.this, Mypage.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
-            mypage_profile.setImageURI(Uri.parse(profile));
         }
 
         mypage_profile.setOnClickListener(new View.OnClickListener() {

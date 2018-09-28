@@ -6,6 +6,7 @@
     <color name="white">#FFFFFF</color>
     <color name="blacks">#000000</color>
     <color name="darkgray">#A9A9A9</color>
+    <color name="gainsboro">#DCDCDC</color>
     <drawable name="bg_select">#DC143C</drawable>
     <drawable name="black">#000000</drawable>
 </resources>

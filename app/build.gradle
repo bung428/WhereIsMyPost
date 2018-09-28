@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
+    buildToolsVersion '28.0.2'
 
     sourceSets.main {
         jniLibs.srcDir 'libs'
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.user.opencvcmake"
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -23,19 +24,31 @@ android {
                         '-DANDROID_STL=gnustl_static'
             }
         }
+        ndk{ abiFilters "armeabi-v7a", "x86"}
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     buildTypes {
+        debug {
+            minifyEnabled false
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt'
+            jniDebuggable true
+        }
         release {
             minifyEnabled false
+            useProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
     lintOptions {
         abortOnError false
+    }
+    aaptOptions {
+        noCompress '.unity3d', '.ress', '.resource', '.obb'
     }
     externalNativeBuild {
         cmake {
@@ -71,4 +84,5 @@ dependencies {
     implementation 'de.javagl:obj:0.2.1'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     implementation 'im.dacer:AndroidCharts:1.0.4'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

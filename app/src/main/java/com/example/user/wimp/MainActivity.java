@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<RecyclerItem> mItems = new ArrayList<>();
     MyRecyclerViewAdapter adapter;
 
-    ImageButton imageBtnList,imageBtnChart,imageBtnMypage,imageBtnChat;
+    ImageButton imageBtnList,imageBtnChart,imageBtnMypage,imageBtnChat, imageBtnReserve;
     RecyclerView recyclerView;
 
     String msg, kakaoname, postLogin,mJsonString,day,getdate,mall,app_mall, loginId;
@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         imageBtnChart = findViewById(R.id.imageBtnChart);
         imageBtnMypage = findViewById(R.id.imageBtnMypage);
         imageBtnChat = findViewById(R.id.imageBtnChat);
+        imageBtnReserve = findViewById(R.id.imageBtnReserve);
         recyclerView = findViewById(R.id.rvAnimals);
 
         setData();
@@ -128,6 +129,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, Mypage.class);
+                startActivity(i);
+            }
+        });
+
+        imageBtnReserve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, Reservation.class);
                 startActivity(i);
             }
         });
@@ -379,6 +388,11 @@ public class MainActivity extends AppCompatActivity {
 
                                 Intent intent1 = new Intent(MainActivity.this, LoginActivity.class);
                                 startActivity(intent1);
+                                break;
+                            case R.id.m4:
+//                                Toast.makeText(getApplication(),"쇼핑몰 추가",Toast.LENGTH_SHORT).show();
+                                Intent intents=new Intent(MainActivity.this,UnityPlayerActivity.class);
+                                startActivity(intents);
                                 break;
                             default:
                                 break;

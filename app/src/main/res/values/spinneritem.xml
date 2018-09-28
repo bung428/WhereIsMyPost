@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- array의 이름은 location 입니다.-->
+    <string-array name="phone">
+        <item>010</item>
+        <item>011</item>
+    </string-array>
+
+    <string-array name="category">
+        <item>물품선택</item>
+        <item>의류</item>
+        <item>서신/서류</item>
+        <item>가전제품류</item>
+        <item>과일류</item>
+        <item>곡물류</item>
+        <item>한약류</item>
+        <item>식품류</item>
+        <item>잡화/서적</item>
+        <item>편의점행사상품</item>
+    </string-array>
+
+    <string-array name="messgae">
+        <item>요청사항선택</item>
+        <item>배송 시 경비실에 맡겨주세요</item>
+        <item>배송 시 택배함에 놔주세요</item>
+        <item>방문 전 전화 주세요</item>
+        <item>파손에 주의해 주세요</item>
+        <item>직접 입력</item>
+    </string-array>
+
+    <string-array name="howtopay">
+        <item>선불</item>
+        <item>착불</item>
+    </string-array>
+</resources>

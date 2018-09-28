@@ -9,4 +9,7 @@
     <item
     android:id="@+id/m3"
     android:title="로그아웃"/>
+    <item
+        android:id="@+id/m4"
+        android:title="미니게임"/>
 </menu>

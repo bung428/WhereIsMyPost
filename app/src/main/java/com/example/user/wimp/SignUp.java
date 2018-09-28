@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +24,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
 
 
 public class SignUp extends AppCompatActivity {
@@ -65,9 +68,12 @@ public class SignUp extends AppCompatActivity {
                 name = signup_name.getText().toString();
                 phone = signup_phone.getText().toString();
 
+
                 if(pwd.equals(pwd_check)){
+                    String security = getSha512(pwd);
+                    Log.d("보안처리됐니?", security);
                     InsertData task = new InsertData();
-                    task.execute(id, pwd, phone, name);
+                    task.execute(id, security, phone, name);
 
                     signup_id.setText("");
                     signup_pwd.setText("");
@@ -121,6 +127,32 @@ public class SignUp extends AppCompatActivity {
         });
 
         return true;
+    }
+
+    private static String getSha512(String plainText) {
+        try {
+            String plussalt = plainText+"!@#!@##$SDFSDF@##@$";
+            StringBuffer sb = new StringBuffer();
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(plussalt.getBytes());
+            byte[] msgb = md.digest();
+
+            for (int i = 0; i < msgb.length; i++) {
+                byte temp = msgb[i];
+                String str = Integer.toHexString(temp & 0xFF);
+                while (str.length() < 2) {
+                    str = "0" + str;
+                }
+                str = str.substring(str.length() - 2);
+                sb.append(str);
+            }
+            String output = sb.toString();
+            return output;
+        } catch (Exception e) {
+            System.out.println("Sha512 error.");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private class GetData extends AsyncTask<String, Void, String>{

@@ -60,12 +60,20 @@
             android:src="@drawable/chart"/>
 
         <ImageButton
-            android:id="@+id/imageBtnMypage"
+        android:id="@+id/imageBtnMypage"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:background="@android:color/transparent"
+        android:layout_weight="1"
+        android:src="@drawable/mypage"/>
+
+        <ImageButton
+            android:id="@+id/imageBtnReserve"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:background="@android:color/transparent"
             android:layout_weight="1"
-            android:src="@drawable/mypage"/>
+            android:src="@drawable/reserve"/>
 
     </LinearLayout>
 

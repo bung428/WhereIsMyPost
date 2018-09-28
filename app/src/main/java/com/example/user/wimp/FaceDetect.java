@@ -1,11 +1,13 @@
 package com.example.user.wimp;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Color;
+import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
@@ -16,7 +18,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -48,17 +52,17 @@ public class FaceDetect extends AppCompatActivity
     ImageButton button;
 
     private static final String TAG = "opencv";
-    public static String currentF = "";
-    public static String onCameraS = "";
+    public String currentF = "";
+    public String onCameraS = "";
 
     private CameraBridgeViewBase mOpenCvCameraView;
     private Mat matInput;
     private Mat matResult;
-    private static boolean south = false;
-    private static boolean north = false;
-    private static boolean east = false;
-    private static boolean west = false;
-    private static int degree;
+    boolean south = false;
+    boolean north = false;
+    boolean east = false;
+    boolean west = false;
+    private int degree;
 
 //    public native void ConvertRGBtoGray(long matAddrInput, long matAddrResult);
     public native long loadCascade(String cascadeFileName );
@@ -175,97 +179,54 @@ public class FaceDetect extends AppCompatActivity
         }
         else  read_cascade_file(); //추가
 
-//        textView = findViewById(R.id.textView);
+        textView = findViewById(R.id.textView);
 
         orientEventListener = new OrientationEventListener(this,
                 SensorManager.SENSOR_DELAY_NORMAL) {
             @Override
             public void onOrientationChanged(int arg0) {
 //                textView.setText(arg0+"");
-                Log.d(TAG, "onOrientationChanged: 남" + FaceDetect.south + " 동" + FaceDetect.east + " 북" + FaceDetect.north + " 서" + FaceDetect.west + " ");
                 if(arg0 > 355 || arg0 < 10)
                 {
-//                    if(!FaceDetect.west.south) {
                     degree = arg0;
-                    if(!FaceDetect.south)
+                    if(!south)
                     {
-                        FaceDetect.south = true;
+                        south = true;
+                        east = false;
+                        north = false;
+                        west = false;
                     }
-                    FaceDetect.currentF = "FaceDetect.west.south";
-                    Log.d(TAG, "onOrientationChanged: 남!!!!!!!!!!!!!!!");
-//                    }
                 }
                 else if (arg0 > 80 && arg0 < 100)
                 {
-//                    if(!FaceDetect.west.east) {
                     degree = arg0;
-                    if(!FaceDetect.east) {
-                        FaceDetect.east = true;
+                    if(!east) {
+                        south = false;
+                        east = true;
+                        north = false;
+                        west = false;
                     }
-                    FaceDetect.currentF = "FaceDetect.west.east";
-                    Log.d(TAG, "onOrientationChanged: 동!!!!!!!!!!!!!!!");
-//                    }
                 }
                 else if (arg0 > 170 && arg0 < 190)
                 {
-//                    if(!FaceDetect.west.north) {
-                        degree = arg0;
-                    if(!FaceDetect.north) {
-                        FaceDetect.north = true;
+                    degree = arg0;
+                    if(!north) {
+                        south = false;
+                        east = false;
+                        north = true;
+                        west = false;
                     }
-                    FaceDetect.currentF = "FaceDetect.west.north";
-                        Log.d(TAG, "onOrientationChanged: 북!!!!!!!!!!!!!!!");
-//                    }
                 }
                 else if(arg0 > 260 && arg0 < 280)
                 {
-//                    if(!FaceDetect.west.west) {
                     degree = arg0;
-                    if(!FaceDetect.west) {
-                        FaceDetect.west = true;
+                    if(!west) {
+                        south = false;
+                        east = false;
+                        north = false;
+                        west = true;
                     }
-                    FaceDetect.currentF = "FaceDetect.west.west";
-                    Log.d(TAG, "onOrientationChanged: 서!!!!!!!!!!!!!!!");
-//                    }
                 }
-//                if(arg0 > 355 || arg0 < 10) {
-////                    if(!FaceDetect.west.south) {
-//                        FaceDetect.west.south = true;
-//                        FaceDetect.west.east = false;
-//                        FaceDetect.west.north = false;
-//                        FaceDetect.west.west = false;
-//
-//                        FaceDetect.west.currentF = "FaceDetect.west.south";
-//                        Log.d(TAG, "onOrientationChanged: 남!!!!!!!!!!!!!!!");
-////                    }
-//                }else if(arg0 > 80 && arg0 < 100){
-////                    if(!FaceDetect.west.east) {
-//                        FaceDetect.west.south = false;
-//                        FaceDetect.west.east = true;
-//                        FaceDetect.west.north = false;
-//                        FaceDetect.west.west = false;
-//                        FaceDetect.west.currentF = "FaceDetect.west.east";
-//                        Log.d(TAG, "onOrientationChanged: 동!!!!!!!!!!!!!!!");
-////                    }
-//                }else if(arg0 > 170 && arg0 < 190){
-////                    if(!FaceDetect.west.north) {
-//                        FaceDetect.west.south = false;
-//                        FaceDetect.west.east = false;
-//                        FaceDetect.west.north = true;
-//                        FaceDetect.west.west = false;
-//                        FaceDetect.west.currentF = "FaceDetect.west.north";
-//                        Log.d(TAG, "onOrientationChanged: 북!!!!!!!!!!!!!!!");
-////                    }
-//                }else if(arg0 > 260 && arg0 < 280){
-////                    if(!FaceDetect.west.west) {
-//                        FaceDetect.west.south = false;
-//                        FaceDetect.west.east = false;
-//                        FaceDetect.west.north = false;
-//                        FaceDetect.west.west = true;
-//                        FaceDetect.west.currentF = "FaceDetect.west.west";
-//                        Log.d(TAG, "onOrientationChanged: 서!!!!!!!!!!!!!!!");
-////                    }
-//                }
             }
         };
 
@@ -312,6 +273,7 @@ public class FaceDetect extends AppCompatActivity
                     sendBroadcast(mediaScanIntent);
 
                     Log.d("이미지 주소인거 맞냐?", Uri.fromFile(file).toString());
+                    Log.d("이미지 주소인거 맞냐?!!!", path+"/image.png");
 
                     Intent i = new Intent(FaceDetect.this, Mypage.class);
                     i.putExtra("profile", Uri.fromFile(file).toString());
@@ -377,119 +339,25 @@ public class FaceDetect extends AppCompatActivity
 
             //가상화면을 인식되는 화면방향으로 회전
             //portrait일때 인식위한 가상화면 회전
-//            Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//            if (!FaceDetect.west.onCameraS.equals(FaceDetect.west.currentF)){
-////            {
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                FaceDetect.west.onCameraS = FaceDetect.west.currentF;
-//                if (degree > 355 || degree < 10) {
-//                    Log.d("이 각도는", "남 => matInput");
-//                    Log.d("각도 in", "남쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-//                    //                Core.flip(matInput, matInput, 1);
-////                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    //                Core.flip(matInput, matInput, -1);
-////                                    Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                                        Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                    FaceDetect.west.south = false;
-//                } else if (degree > 80 && degree < 100) {
-//                    Log.d("이 각도는", "동 => matInput");
-//                    Log.d("각도 in", "동쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-//                    //                Core.flip(matInput, matInput, 1);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    //                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                    FaceDetect.west.east = false;
-//                } else if (degree > 170 && degree < 190) {
-//                    Log.d("이 각도는", "북 => matInput");
-//                    Log.d("각도 in", "북쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-//
-//                    //                Core.flip(matInput, matInput, 1);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                    FaceDetect.west.north = false;
-//                } else if (degree > 260 && degree < 280) {
-//                    Log.d("이 각도는", "서 => matInput");
-//                    Log.d("각도 in", "서쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-//                    //                Core.flip(matInput, matInput, 1);
-//                    //                    Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    //                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    //                Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                    FaceDetect.west.west = false;
-//                }
-//            }
-//            Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
             //틱상태
+//            Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
             if(degree>355 || degree<10) {
-                Log.d("각도 in", "남쪽 "+"동"+FaceDetect.east+"서"+FaceDetect.west+"남"+FaceDetect.south+"북"+FaceDetect.north);
-//                Core.flip(matInput, matInput, 1);
-                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.flip(matInput, matInput, -1);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_180);
-                FaceDetect.south = false;
-            }else if(degree>80 && degree<100){
-                Log.d("각도 in", "동쪽 "+"동"+FaceDetect.east+"서"+FaceDetect.west+"남"+FaceDetect.south+"북"+FaceDetect.north);
-//                Core.flip(matInput, matInput, 1);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-                Core.rotate(matInput, matInput, Core.ROTATE_180);
-                FaceDetect.east = false;
-            }else if(degree>170 && degree<190){
-                Log.d("각도 in", "북쪽 "+"동"+FaceDetect.east+"서"+FaceDetect.west+"남"+FaceDetect.south+"북"+FaceDetect.north);
-
-//                Core.flip(matInput, matInput, 1);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
+//                Log.d("각도 in", "남쪽 "+"동"+east+"서"+west+"남"+south+"북"+north);
 //                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
                 Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                Core.rotate(matInput, matInput, Core.ROTATE_180);
-                FaceDetect.north = false;
+            }else if(degree>80 && degree<100){
+//                Log.d("각도 in", "동쪽 "+"동"+east+"서"+west+"남"+south+"북"+north);
+//                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
+            }else if(degree>170 && degree<190){
+//                Log.d("각도 in", "북쪽 "+"동"+east+"서"+west+"남"+south+"북"+north);
+                Core.rotate(matInput, matInput, Core.ROTATE_180);
+                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
+//                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
             }else if(degree>260 && degree<280){
-                Log.d("각도 in", "서쪽 "+"동"+FaceDetect.east+"서"+FaceDetect.west+"남"+FaceDetect.south+"북"+FaceDetect.north);
-//                Core.flip(matInput, matInput, 1);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.rotate(matInput, matInput, Core.ROTATE_180);
-                FaceDetect.west = false;
+//                Log.d("각도 in", "서쪽 "+"동"+east+"서"+west+"남"+south+"북"+north);
+                Core.rotate(matInput, matInput, Core.ROTATE_180);
             }
 
-
-//            if(degree>355 || degree<10) {
-//                Log.d("각도 in", "남쪽 "+"동"+FaceDetect.west.east+"서"+FaceDetect.west.west+"남"+FaceDetect.west.south+"북"+FaceDetect.west.north);
-////                Core.flip(matInput, matInput, 1);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.flip(matInput, matInput, -1);
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-////                    Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                FaceDetect.west.south = false;
-//            }else if(degree>80 && degree<100){
-//                Log.d("각도 in", "동쪽 "+"동"+FaceDetect.west.east+"서"+FaceDetect.west.west+"남"+FaceDetect.west.south+"북"+FaceDetect.west.north);
-////                Core.flip(matInput, matInput, 1);
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-//                    Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                FaceDetect.west.east = false;
-//            }else if(degree>170 && degree<190){
-//                Log.d("각도 in", "북쪽 "+"동"+FaceDetect.west.east+"서"+FaceDetect.west.west+"남"+FaceDetect.west.south+"북"+FaceDetect.west.north);
-//
-////                Core.flip(matInput, matInput, 1);
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-////                Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                FaceDetect.west.north = false;
-//            }else if(degree>260 && degree<280){
-//                Log.d("각도 in", "서쪽 "+"동"+FaceDetect.west.east+"서"+FaceDetect.west.west+"남"+FaceDetect.west.south+"북"+FaceDetect.west.north);
-////                Core.flip(matInput, matInput, 1);
-////                    Core.rotate(matInput, matInput, Core.ROTATE_90_CLOCKWISE);
-////                    Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.rotate(matInput, matInput, Core.ROTATE_180);
-//                FaceDetect.west.west = false;
-//            }
 //            if(!FaceDetect.west.onCameraS.equals(FaceDetect.west.currentF))
 //            {
 ////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
@@ -533,94 +401,69 @@ public class FaceDetect extends AppCompatActivity
 
             if ( matResult == null )
                 matResult = new Mat(matInput.rows(), matInput.cols(), matInput.type());
-            Log.d("aa","aaa");
-            Core.flip(matInput, matInput, 1);
+
+            Core.flip(matInput, matInput, -1);
 
             detect(cascadeClassifier_face,cascadeClassifier_eye, matInput.getNativeObjAddr(),
                     matResult.getNativeObjAddr());
 
             if (degree > 355 || degree < 10) {
-                Log.d("이 각도는", "남 => matResult");
-                Log.d("각도 in", "남쪽 " + "동" + FaceDetect.east + "서" + FaceDetect.west + "남" + FaceDetect.south + "북" + FaceDetect.north);
-//                Core.flip(matResult, matResult, 1);
-//                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.flip(matResult, matResult, -1);
-//                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-//                Core.rotate(matResult, matResult, Core.ROTATE_180);
-                Log.d("매트릭스 값", matResult.width() + " 가로 " + matResult.height() + " 세로");
-                FaceDetect.south = false;
-            } else if (degree > 80 && degree < 100) {
-                Log.d("이 각도는", "동 => matResult");
-                Log.d("각도 in", "동쪽 " + "동" + FaceDetect.east + "서" + FaceDetect.west + "남" + FaceDetect.south + "북" + FaceDetect.north);
-//                Core.flip(matResult, matResult, 1);
-                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-//            Core.rotate(matResult, matResult, Core.ROTATE_180);
-                Log.d("매트릭스 값", matResult.width() + " 가로 " + matResult.height() + " 세로");
-                FaceDetect.east = false;
-            } else if (degree > 170 && degree < 190) {
-                Log.d("이 각도는", "북 => matResult");
-                Log.d("각도 in", "북쪽 " + "동" + FaceDetect.east + "서" + FaceDetect.west + "남" + FaceDetect.south + "북" + FaceDetect.north);
-
-//                Core.flip(matResult, matResult, 1);
-//                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-                Core.rotate(matResult, matResult, Core.ROTATE_180);
-                Log.d("매트릭스 값", matResult.width() + " 가로 " + matResult.height() + " 세로");
-                FaceDetect.north = false;
-            } else if (degree > 260 && degree < 280) {
-                Log.d("이 각도는", "서 => matResult");
-                Log.d("각도 in", "서쪽 " + "동" + FaceDetect.east + "서" + FaceDetect.west + "남" + FaceDetect.south + "북" + FaceDetect.north);
-//                Core.flip(matResult, matResult, 1);
+//                Log.d("각도 in", "남쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+                Log.d("width & heigth ", matResult.width() + "/" + matResult.height());
                 Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-//                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-//            Core.rotate(matResult, matResult, Core.ROTATE_180);
-                Log.d("매트릭스 값", matResult.width() + " 가로 " + matResult.height() + " 세로");
-                FaceDetect.west = false;
+            } else if (degree > 80 && degree < 100) {
+//                Log.d("각도 in", "동쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+                Log.d("width & heigth ", matResult.width() + "/" + matResult.height());
+                Core.rotate(matResult, matResult, Core.ROTATE_180);
+            } else if (degree > 170 && degree < 190) {
+//                Log.d("각도 in", "북쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+                Log.d("width & heigth ", matResult.width() + "/" + matResult.height());
+                Core.rotate(matResult, matResult, Core.ROTATE_180);
+                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
+//                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
+            } else if (degree > 260 && degree < 280) {
+//                Log.d("각도 in", "서쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+                Log.d("width & heigth ", matResult.width() + "/" + matResult.height());
             }
 
-//            if (!FaceDetect.west.onCameraS.equals(FaceDetect.west.currentF)) {
-////            {
-//////                Core.rotate(matInput, matInput, Core.ROTATE_90_COUNTERCLOCKWISE);
-//                FaceDetect.west.onCameraS = FaceDetect.west.currentF;
-//                if (degree > 355 || degree < 10) {
-//                    Log.d("이 각도는", "남 => matResult");
-//                    Log.d("각도 in", "남쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-////                Core.flip(matResult, matResult, 1);
+//            if (south) {
+//                Log.d("각도 in", "남쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//                south = false;
+//            } else if (east) {
+//                Log.d("각도 in", "동쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//                east = false;
 ////                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.flip(matResult, matResult, -1);
-////                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
+//            } else if (north) {
+//                Log.d("각도 in", "북쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//                north = false;
 ////                Core.rotate(matResult, matResult, Core.ROTATE_180);
-//                    FaceDetect.west.south = false;
-//                } else if (degree > 80 && degree < 100) {
-//                    Log.d("이 각도는", "동 => matResult");
-//                    Log.d("각도 in", "동쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-////                Core.flip(matResult, matResult, 1);
-//                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
+//            } else if (west) {
+//                Log.d("각도 in", "서쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//                west = false;
 ////                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-////            Core.rotate(matResult, matResult, Core.ROTATE_180);
-//                    FaceDetect.west.east = false;
-//                } else if (degree > 170 && degree < 190) {
-//                    Log.d("이 각도는", "북 => matResult");
-//                    Log.d("각도 in", "북쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
+//            }
+
+//            if (!onCameraS.equals(currentF)) {
+//                onCameraS = currentF;
+//                if (degree > 355 || degree < 10) {
+//                    Log.d("각도 in", "남쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
 //
-////                Core.flip(matResult, matResult, 1);
-////                Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-////                Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
+//                    south = false;
+//                } else if (degree > 80 && degree < 100) {
+//                    Log.d("각도 in", "동쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//
+//                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
+//                    east = false;
+//                } else if (degree > 170 && degree < 190) {
+//                    Log.d("각도 in", "북쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//
 //                    Core.rotate(matResult, matResult, Core.ROTATE_180);
-//                    FaceDetect.west.north = false;
+//                    north = false;
 //                } else if (degree > 260 && degree < 280) {
-//                    Log.d("이 각도는", "서 => matResult");
-//                    Log.d("각도 in", "서쪽 " + "동" + FaceDetect.west.east + "서" + FaceDetect.west.west + "남" + FaceDetect.west.south + "북" + FaceDetect.west.north);
-////                Core.flip(matResult, matResult, 1);
+//                    Log.d("각도 in", "서쪽 " + "동" + east + "서" + west + "남" + south + "북" + north);
+//
 //                    Core.rotate(matResult, matResult, Core.ROTATE_90_CLOCKWISE);
-////                    Core.rotate(matResult, matResult, Core.ROTATE_90_COUNTERCLOCKWISE);
-////            Core.rotate(matResult, matResult, Core.ROTATE_180);
-//                    FaceDetect.west.west = false;
+//                    west = false;
 //                }
 //            }
 
@@ -633,8 +476,6 @@ public class FaceDetect extends AppCompatActivity
 
         return matResult;
     }
-
-
 
     //여기서부턴 퍼미션 관련 메소드
     static final int PERMISSIONS_REQUEST_CODE = 1000;

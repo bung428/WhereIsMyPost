@@ -6,11 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,8 +33,20 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Set;
+
+import javax.crypto.Cipher;
 
 public class MallCrawl extends AppCompatActivity {
 
@@ -89,6 +103,71 @@ public class MallCrawl extends AppCompatActivity {
             Log.d("mall","no id pwd");
         }else{
             String idpw=preferences.getString(mall,null);
+
+            Path pathpub = Paths.get(Environment.getDataDirectory() + "/data/com.example.user.opencvcmake/files/"+mall+".pub");
+            byte[] bytes;
+            X509EncodedKeySpec ks;
+            KeyFactory keyFactory;
+            PublicKey publicKey1 = null;
+            try {
+                bytes = Files.readAllBytes(pathpub);
+
+                ks = new X509EncodedKeySpec(bytes);
+                keyFactory = KeyFactory.getInstance("RSA");
+                publicKey1 = keyFactory.generatePublic(ks);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            }
+
+            Path pathpri = Paths.get(Environment.getDataDirectory() + "/data/com.example.user.opencvcmake/files/"+mall+".key");
+            byte[] bytess;
+            PKCS8EncodedKeySpec kss;
+            KeyFactory keyFactorys;
+            PrivateKey privateKey1 = null;
+            try {
+                bytess = Files.readAllBytes(pathpri);
+
+                kss = new PKCS8EncodedKeySpec(bytess);
+                keyFactorys = KeyFactory.getInstance("RSA");
+                privateKey1 = keyFactorys.generatePrivate(kss);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            }
+
+//            // Encode the original data with RSA private key
+//            byte[] encodedBytes = null;
+//            try {
+//                Cipher c = Cipher.getInstance("RSA");
+//                c.init(Cipher.ENCRYPT_MODE, publicKey1);
+//                encodedBytes = c.doFinal(idpw.getBytes());
+//            } catch (Exception e) {
+//                Log.e("RSATEST", "RSA encryption error");
+//            }
+////                    TextView tvencoded = (TextView) findViewById(R.id.textView);
+////                    tvencoded.setText("[ENCODED]:\n" +
+////                            Base64.encodeToString(encodedBytes, Base64.DEFAULT) + "\n");
+//            Log.d("암호화? ", Base64.encodeToString(encodedBytes, Base64.DEFAULT));
+//            idpw = Base64.encodeToString(encodedBytes, Base64.DEFAULT);
+            // Decode the encoded data with RSA public key
+            byte[] decodedBytes = null;
+            try {
+                Cipher c = Cipher.getInstance("RSA");
+                Log.d("암호화? ", idpw);
+                c.init(Cipher.DECRYPT_MODE, privateKey1);
+                decodedBytes = c.doFinal(Base64.decode(idpw, Base64.DEFAULT));
+            } catch (Exception e) {
+                Log.e("RSATEST", "RSA decryption error");
+            }
+            Log.d("복호화? ", new String(decodedBytes));
+            idpw = new String(decodedBytes);
             String[] user=idpw.split("##");
             id=user[0];
             pwd=user[1];
