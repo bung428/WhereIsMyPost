@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 Set<String> sets = preferencess.getStringSet("postInfo", null);
                 postInfo = new ArrayList<>(sets);
 
-                Log.d("post", "in main" + postInfo.get(0).toString());
+                Log.d("post", "in mainin main" + postInfo.get(0).toString());
                 String[] Data = postInfo.get(0).split("##");
                 Log.d("post", "in main" + Data[0] + Data[1]);
                 if (Data[1].equals("CJ대한통운")) {
