@@ -25,6 +25,9 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,6 +47,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.crypto.Cipher;
@@ -59,7 +64,10 @@ public class MallCrawl extends AppCompatActivity {
     RecyclerView rvMall;
 
     ArrayList<String> loginUser;
-    String loginId;
+    String loginId, TAG = "몰 크롤 엑티비티 : ";
+    String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
+
+
 
     private ArrayList<LittleMallItem> mItems = new ArrayList<>();
     LittleAdapter adapter;
@@ -171,6 +179,7 @@ public class MallCrawl extends AppCompatActivity {
             String[] user=idpw.split("##");
             id=user[0];
             pwd=user[1];
+            Log.d("mall crawl", "복호화 "+ id + pwd);
         }
         CheckData checkData = new CheckData();
         switch (mall) {
@@ -340,19 +349,17 @@ public class MallCrawl extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-//            progressDialog.dismiss();
-//            results.setText(result);
-            Log.d("TAG", "response - " + result);
-            Log.d("TAG",result.toString());
+//            Log.d("TAG", "response - " + result);
             if (result == null){
                 Toast.makeText(MallCrawl.this, "error", Toast.LENGTH_SHORT).show();
             }
             else {
 //                Toast.makeText(LoginActivity.this, result.toString(), Toast.LENGTH_SHORT).show();
                 message = result.toString();
-                Log.d("mall", message);
+                Log.d("mall", "hi" +  message);
                 if(message.equals("db have data")) {
                     Log.d("mall","서버 디비에 이미 저장된 부분");
+                    // 크롤링 시작
                 }else {
                     Log.d("mall","서버 디비에 저장해야하는 쿼리문 써야할 부분");
                 }

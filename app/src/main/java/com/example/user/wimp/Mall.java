@@ -67,8 +67,9 @@ public class Mall extends AppCompatActivity {
         mallPang=findViewById(R.id.mallPang);
         mallGmarket=findViewById(R.id.mallGmarket);
 
-        final SharedPreferences preferences = getSharedPreferences("mall",MODE_PRIVATE);
-        final SharedPreferences.Editor editor=preferences.edit();
+        SharedPreferences preferences = getSharedPreferences("mall",MODE_PRIVATE);
+        SharedPreferences.Editor editor=preferences.edit();
+
         if(preferences.getString("pang",null)==null){
             pangBtn.setText("연동");
         }else{
