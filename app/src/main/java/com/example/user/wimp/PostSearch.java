@@ -1,7 +1,9 @@
 package com.example.user.wimp;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,21 +15,53 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class PostSearch extends AppCompatActivity {
 
     EditText postNum;
-    TextView tvSelect,results;
+    TextView tvSelect, results;
 
-    String company,goods,num,msg,number,message,mJsonString;
+    JSONArray jsonArray;
+    JSONObject jsonObject;
+
+    String company, goods, num, msg, number, message, mJsonString, TAG = "송장번호 화면",sendrNm,qty,itemNm,rcvrNm;
     Boolean value;
     String[] user;
 
     ArrayList<String> postInfo = new ArrayList<>();
+    ArrayList<String> crgNm = new ArrayList<>();
+    ArrayList<String> dTime = new ArrayList<>();
+    ArrayList<String> regBranNm = new ArrayList<>();
+    ArrayList<String> scanNm = new ArrayList<>();
+    ArrayList<String> loginUser = new ArrayList<>();
+
+    String loginId;
+
+    ConnDBCj connDBCj;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +73,20 @@ public class PostSearch extends AppCompatActivity {
         tvSelect = findViewById(R.id.tvSelect);
 //        results = findViewById(R.id.results);
 
+        try {
+            SharedPreferences preferences = getSharedPreferences("auto", MODE_PRIVATE);
+
+            Set<String> set = preferences.getStringSet("userinfo", null);
+            loginUser = new ArrayList<>(set);
+
+            Log.d("checkbox", loginUser.get(0).toString());
+            String[] loginData = loginUser.get(0).split("@@@@");
+
+            loginId = loginData[0];
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
         tvSelect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,13 +97,13 @@ public class PostSearch extends AppCompatActivity {
 
         //택배사 회사명 intent로 받아오기
         //상품 내용, 송장번호, intent로 받아온 택배회사명, 메시지를 등록버튼을 누르면 저장한다.
-        Intent intent=getIntent();
-        if(intent!=null){
-            company=intent.getStringExtra("postCompany");
-            if(company!=null) {
+        Intent intent = getIntent();
+        if (intent != null) {
+            company = intent.getStringExtra("postCompany");
+            if (company != null) {
                 Log.d("post", company);
                 tvSelect.setText(company);
-                number=postNum.getText().toString();
+                number = postNum.getText().toString();
             }
         }
     }
@@ -74,14 +122,14 @@ public class PostSearch extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        num=postNum.getText().toString();
-        company=tvSelect.getText().toString();
-        Log.d("post", "onpause"+"송장번호 : "+num+"회사 : "+company);
+        num = postNum.getText().toString();
+        company = tvSelect.getText().toString();
+        Log.d("post", "onpause" + "송장번호 : " + num + "회사 : " + company);
 
-        SharedPreferences preferences = getSharedPreferences("post",MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences("post", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
-        if(!num.equals("")) {
+        if (!num.equals("")) {
             if (preferences.getStringSet("postInfo", null) != null) {
                 postInfo.clear();
 
@@ -138,97 +186,6 @@ public class PostSearch extends AppCompatActivity {
         }
     }
 
-//    private class CJTask extends AsyncTask<String, Void, String> {
-//        ProgressDialog progressDialog;
-//        String errorString = null;
-//
-//        @Override
-//        protected void onPreExecute() {
-//            super.onPreExecute();
-//
-//            progressDialog = ProgressDialog.show(PostSearch.this,
-//                    "Please Wait", null, true, true);
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            super.onPostExecute(result);
-//            progressDialog.dismiss();
-////            results.setText(result);
-//            Log.d("post", "response - " + result);
-//
-//            if (result == null) {
-//                Toast.makeText(PostSearch.this, "already have", Toast.LENGTH_SHORT).show();
-//                Intent i = new Intent(PostSearch.this,MainActivity.class);
-//                startActivity(i);
-//            } else {
-//                mJsonString = result.toString();
-//                Log.d("post", "json"+mJsonString);
-//
-//                Intent i = new Intent(PostSearch.this,MainActivity.class);
-//                i.putExtra("json",mJsonString);
-//                startActivity(i);
-//
-////                showResult();
-//            }
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... params) {
-//            String pi_num = params[0];
-//            String pi_comp = params[1];
-//            String serverURL = "http://115.71.232.235/wimp/cjcrawl.php";
-//            String postParameters = "num=" + pi_num + "&company=" + pi_comp;
-//
-//            Log.d("post", postParameters);
-//            try {
-//                URL url = new URL(serverURL);
-//                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-//                httpURLConnection.setReadTimeout(5000);
-//                httpURLConnection.setConnectTimeout(5000);
-//                httpURLConnection.setRequestMethod("POST");
-//                httpURLConnection.setDoInput(true);
-//                httpURLConnection.connect();
-//
-//                OutputStream outputStream = httpURLConnection.getOutputStream();
-//                outputStream.write(postParameters.getBytes("UTF-8"));
-//                outputStream.flush();
-//                outputStream.close();
-//
-//                int responseStatusCode = httpURLConnection.getResponseCode();
-//
-//                Log.d("post", "response code - " + responseStatusCode);
-//
-//                InputStream inputStream;
-//                if (responseStatusCode == HttpURLConnection.HTTP_OK) {
-//                    inputStream = httpURLConnection.getInputStream();
-//                } else {
-//                    inputStream = httpURLConnection.getErrorStream();
-//                }
-//
-//                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-//                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//
-//                StringBuilder sb = new StringBuilder();
-//                String line;
-//
-//                while ((line = bufferedReader.readLine()) != null) {
-//                    sb.append(line);
-//                }
-//
-//                bufferedReader.close();
-//
-//                Log.d("post", sb.toString());
-//
-//                return sb.toString().trim();
-//
-//            } catch (IOException e) {
-//                return null;
-//            }
-//        }
-//
-//    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         ActionBar actionBar = getSupportActionBar();
@@ -241,13 +198,13 @@ public class PostSearch extends AppCompatActivity {
 
 
         //layout을 가지고 와서 actionbar에 포팅을 시킵니다.
-        LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View actionbar = inflater.inflate(R.layout.custom_newpost, null);
 
         actionBar.setCustomView(actionbar);
 
         //액션바 양쪽 공백 없애기
-        Toolbar parent = (Toolbar)actionbar.getParent();
+        Toolbar parent = (Toolbar) actionbar.getParent();
         parent.setContentInsetsAbsolute(0, 0);
 
         Button backBtn = findViewById(R.id.backBtn);
@@ -268,28 +225,29 @@ public class PostSearch extends AppCompatActivity {
                 //택배사를 이용해 해당 택배사 송장번호 조회 사이트로 들아간다.
                 //송장번호를 이용해 그 값으로 조회사이트에서 조회를 한다.
                 //조회된 물품에 대한 정보를 가져온다.
+                //크롤링 한 데이터를 디비에 저장하면 메인화면으로 넘어가 뷰로 보여준다.
                 num = postNum.getText().toString();
 
-                Intent intent=getIntent();
-                if(intent!=null){
-                    company=intent.getStringExtra("postCompany");
-                    if(company!=null) {
-//                        Log.d("postCompany", company);
+                Intent intent = getIntent();
+                if (intent != null) {
+                    company = intent.getStringExtra("postCompany");
+                    if (company != null) {
                         tvSelect.setText(company);
-                        Intent i = new Intent(PostSearch.this, MainActivity.class);
-                        startActivity(i);
-//                        switch (company) {
-//                            case "CJ대한통운":
-//                                CJTask cjTask = new CJTask();
-//                                cjTask.execute(num,company);
-//                                Intent i = new Intent(PostSearch.this, MainActivity.class);
-//                                startActivity(i);
-//                                break;
-//                            case "한진택배":
+//                        Intent i = new Intent(PostSearch.this, MainActivity.class);
+//                        startActivity(i);
+                        switch (company) {
+                            case "CJ대한통운":
+                                CJTask cjTask = new CJTask();
+                                cjTask.execute();
+
+                                Intent intent1 = new Intent(PostSearch.this, MainActivity.class);
+                                startActivity(intent1);
+                                break;
+                            case "한진택배":
 //                                HJTask hjTask = new HJTask();
 //                                hjTask.execute();
-//                                break;
-//                        }
+                                break;
+                        }
                     }
                 }
             }
@@ -297,157 +255,206 @@ public class PostSearch extends AppCompatActivity {
 
         return true;
     }
-}
 
+    private class CJTask extends AsyncTask<Void, String, String> {
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
 
+        }
 
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+        }
 
-//cj jsoup 테스트해보자 자바스크립트 text로 저장시켜서 다 오는지 확인해봐야해
-//    private class CJTask extends AsyncTask<Void, String, String> {
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                org.jsoup.Connection.Response response = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking")
+                        .method(org.jsoup.Connection.Method.GET)
+                        .timeout(10000)
+                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
+                        .header("Cache-Control", "max-age=0")
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .header("Connection", "keep-alive")
+                        .header("Host", "www.cjlogistics.com")
+                        .header("Upgrade-Insecure-Requests", "1")
+                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+                        .header("Accept-Encoding", "gzip, deflate, br")
+                        .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                        .execute();
+
+                Map<String, String> loginTryCookie = response.cookies();
+                Document csrfdoc = response.parse();
+
+                String _csrf = csrfdoc.select("input[name=_csrf]").val();
+                Log.d("jsoup", "_csrf = " + _csrf);
+
+                Map<String, String> data = new HashMap<>();
+                data.put("_csrf", _csrf);
+                data.put("paramInvcNo",num);
+
+                org.jsoup.Connection.Response detailResponse = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking-detail")
+                        .method(org.jsoup.Connection.Method.POST)
+                        .timeout(10000)
+                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
+                        .header("Referer", "https://www.cjlogistics.com/ko/tool/parcel/tracking")
+                        .header("Origin", "https://www.cjlogistics.com")
+                        .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                        .header("Connection", "keep-alive")
+                        .header("Host", "www.cjlogistics.com")
+                        .header("Upgrade-Insecure-Requests", "1")
+                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+                        .header("Accept-Encoding", "gzip, deflate, br")
+                        .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+                        .header("X-Requested-With", "XMLHttpRequest")
+                        .ignoreContentType(true)
+                        .cookies(loginTryCookie)
+                        .data(data)
+                        .execute();
+
+                Document doc = detailResponse.parse();
+
+                jsonObject = new JSONObject(doc.text());
+                String parcelResultMap = jsonObject.getString("parcelResultMap");
+                String parcelDetailResultMap = jsonObject.getString("parcelDetailResultMap");
+
+                jsonObject = new JSONObject(parcelResultMap);
+                jsonArray = new JSONArray(jsonObject.getString("resultList"));
+
+                sendrNm = jsonArray.getJSONObject(0).getString("sendrNm");
+                qty = jsonArray.getJSONObject(0).getString("qty");
+                itemNm = jsonArray.getJSONObject(0).getString("itemNm");
+                rcvrNm = jsonArray.getJSONObject(0).getString("rcvrNm");
+
+                Log.d(TAG, "doInBackground: 조회결과 "+sendrNm+" "+qty+" "+itemNm+" "+rcvrNm);
+
+                jsonObject = new JSONObject(parcelDetailResultMap);
+                jsonArray = new JSONArray(jsonObject.getString("resultList"));
+                for (int i=0; i<jsonArray.length(); i++) {
+                    crgNm.add(jsonArray.getJSONObject(i).getString("crgNm"));
+                    dTime.add(jsonArray.getJSONObject(i).getString("dTime"));
+                    regBranNm.add(jsonArray.getJSONObject(i).getString("regBranNm"));
+                    scanNm.add(jsonArray.getJSONObject(i).getString("scanNm"));
+                }
+                for (int i=0; i<crgNm.size(); i++) {
+                    Log.d(TAG, "doInBackground: 조회상태 "+crgNm.get(i)+" "+dTime.get(i)+" "+regBranNm.get(i)+" "+scanNm.get(i));
+                }
+
+                // 위에 뽑아둔 데이터를 디비에 저장하여 메인으로 이동하여 뿌려주도록하자.
+                connDBCj = new ConnDBCj();
+                // 레트로핏으로 arraylist 보내기 하자.
+                connDBCj.execute(num, sendrNm, rcvrNm, crgNm.get(0), scanNm.get(0), dTime.get(0), regBranNm.get(0), company, loginId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
+    private class ConnDBCj extends AsyncTask<String, Void, String> {
+        ProgressDialog progressDialog;
+        String errorString = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            progressDialog = ProgressDialog.show(PostSearch.this,
+                    "Please Wait", null, true, true);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            progressDialog.dismiss();
+
+            Log.d(TAG, "onPostExecute: 서버응답"+result.toString());
+//            if (result == null) {
+//                Toast.makeText(PostSearch.this, "already have", Toast.LENGTH_SHORT).show();
+//                Intent i = new Intent(PostSearch.this, MainActivity.class);
+//                startActivity(i);
+//            } else {
+//                mJsonString = result.toString();
+//                Log.d("post", "json" + mJsonString);
 //
-//        @Override
-//        protected void onPostExecute(String result) {
-//            super.onPostExecute(result);
-//        }
+//                Intent i = new Intent(PostSearch.this, MainActivity.class);
+//                i.putExtra("json", mJsonString);
+//                startActivity(i);
 //
-//        @Override
-//        protected String doInBackground(Void... voids) {
-//            try {
-//                org.jsoup.Connection.Response response = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking")
-//                        .method(org.jsoup.Connection.Method.GET)
-//                        .timeout(10000)
-////                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("Cache-Control","max-age=0")
-////                        .header("Referer","https://www.google.co.kr/")
-////                        .header("Origin", "https://www.doortodoor.co.kr")
-//                        .header("Content-Type","application/x-www-form-urlencoded")
-//                        .header("Connection","keep-alive")
-//                        .header("Host","www.cjlogistics.com")
-//                        .header("Upgrade-Insecure-Requests","1")
-//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                        .header("Accept-Encoding","gzip, deflate, br")
-//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-////                        .ignoreContentType(true)
-//                        .execute();
-//
-//                Map<String, String> loginTryCookie = response.cookies();
-//                Document csrfdoc = response.parse();
-//
-//                String _csrf = csrfdoc.select("input[name=_csrf]").val();
-//                Log.d("jsoup","_csrf = "+_csrf);
-////                num = postNum.getText().toString();
-//
-//                Map<String, String> data = new HashMap<>();
-//                data.put("_csrf",_csrf);
-////                data.put("paramInvcNo",num);
-//                data.put("paramInvcNo","342695084151");
-//
-//                //403에러가 고쳐지지가 않는다
-//                //피들러에서 tracking-detail과 tracking-deliveryDetail
-//                //두가지의 url이 나오는데 두가지의 textview값이 json?형식이다
-//                //이를 어떻게 처리해야할지?
-//                org.jsoup.Connection.Response detailResponse = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking-detail")
-//                        .method(org.jsoup.Connection.Method.POST)
-//                        .timeout(10000)
-////                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("Referer","https://www.cjlogistics.com/ko/tool/parcel/tracking")
-//                        .header("Origin", "https://www.cjlogistics.com")
-//                        .header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8")
-//                        .header("Connection","keep-alive")
-//                        .header("Host","www.cjlogistics.com")
-//                        .header("Upgrade-Insecure-Requests","1")
-//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                        .header("Accept-Encoding","gzip, deflate, br")
-//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-//                        .header("X-Requested-With","XMLHttpRequest")
-////                        .header("Cookie","_ga=GA1.2.106805566.1529564462; cjlogisticsFrontLangCookie=ko; _gid=GA1.2.410628013.1531719978; JSESSIONID=2B609208DDEEB7448C01E93F01453BC3.front21; _ceg.s=pbyg31; _ceg.u=pbyg31")
-//                        .ignoreContentType(true)
-//                        .cookies(loginTryCookie)
-//                        .data(data)
-//                        .execute();
-////
-//                Map<String, String> sessioncookie = detailResponse.cookies();
-//                Log.d("jsoup","login cookie = "+sessioncookie.toString());
-//
-//                Document doc = detailResponse.parse();
-//                Log.d("jsoup","first"+doc.text());
-//                JSONObject jsonObject = new JSONObject(doc.text());
-//                JSONArray jsonArray = (JSONArray) ((JSONArray) jsonObject.get("resultList")).get(0);
-//                for(int i=0; i<jsonArray.length(); i++) {
-//                    String item = (String) (((JSONArray) jsonArray.get(i)).get(0));
-//                    Log.d("jsoup",item);
-//                }
-//
-//
-//                Map<String, String> datas = new HashMap<>();
-//                datas.put("_csrf",_csrf);
-////                data.put("paramInvcNo",num);
-//                datas.put("paramBranchCd","6363");
-//                datas.put("paramEmpId","519695");
-//
-//                org.jsoup.Connection.Response deliveryResponse = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking-deliveryDetail")
-//                        .method(org.jsoup.Connection.Method.POST)
-//                        .timeout(10000)
-////                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("Referer","https://www.cjlogistics.com/ko/tool/parcel/tracking")
-//                        .header("Origin", "https://www.cjlogistics.com")
-//                        .header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8")
-//                        .header("Connection","keep-alive")
-//                        .header("Host","www.cjlogistics.com")
-//                        .header("Upgrade-Insecure-Requests","1")
-//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                        .header("Accept-Encoding","gzip, deflate, br")
-//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-//                        .header("X-Requested-With","XMLHttpRequest")
-////                        .header("Cookie","_ga=GA1.2.106805566.1529564462; cjlogisticsFrontLangCookie=ko; _gid=GA1.2.410628013.1531719978; JSESSIONID=2B609208DDEEB7448C01E93F01453BC3.front21; _ceg.s=pbyg31; _ceg.u=pbyg31")
-//                        .ignoreContentType(true)
-//                        .cookies(sessioncookie)
-//                        .data(datas)
-//                        .execute();
-//
-//                Document docs = deliveryResponse.parse();
-//                Log.d("jsoup","second"+docs.text());
-//
-//                Document adminPageDocument = Jsoup.connect("https://www.cjlogistics.com/ko/tool/parcel/tracking")
-//                        .timeout(10000)
-//                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-//                        .header("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36")
-////                        .header("Origin", "https://www.doortodoor.co.kr")
-//                        .header("Content-Type","application/x-www-form-urlencoded")
-//                        .header("Cache-Control","max-age=0")
-//                        .header("Connection","keep-alive")
-//                        .header("Host","www.cjlogistics.com")
-//                        .header("Upgrade-Insecure-Requests","1")
-//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                        .header("Accept-Encoding","gzip, deflate, br")
-//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-////                        .header("Referer", "hhttps://www.google.co.kr/")
-////                        .header("Cookie","_ga=GA1.2.106805566.1529564462; cjlogisticsFrontLangCookie=ko; _gid=GA1.2.410628013.1531719978; JSESSIONID=2B609208DDEEB7448C01E93F01453BC3.front21; _ceg.s=pbyg31; _ceg.u=pbyg31")
-//                        .cookies(sessioncookie)
-//                        .get();
-//
-//                Elements title = adminPageDocument.select("div[id=isResult] > div[class=common-hrTable-1] > table > tbody[id=statusDetail]");
-//
-////                Log.d("jsoup",adminPageDocument.body().toString());
-////                Log.d("jsoup", "after login title? "+title);
-//                for(Element option : title) {
-//                    String marketLogin = option.text();
-//                    Log.d("jsoup", marketLogin);
-//                }
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            } catch (JSONException e) {
-//                e.printStackTrace();
 //            }
-//
-//            return null;
-//        }
-//    }
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String pi_num = params[0];
+            String pi_send = params[1];
+            String pi_recv = params[2];
+            String pi_info = params[3];
+            String p_level = params[4];
+            String p_date = params[5];
+            String p_where = params[6];
+            String p_comp = params[7];
+            String userId = params[8];
+            String serverURL = "http://115.71.232.235/wimp/cjcrawl.php";
+            String postParameters =
+                    "num=" + pi_num +  "&send=" + pi_send +  "&recv=" + pi_recv +  "&info=" + pi_info + "&level=" + p_level
+                            + "&date=" + p_date + "&where=" + p_where + "&company=" + p_comp + "&userId=" + userId;
+
+            Log.d("post", postParameters);
+            try {
+                URL url = new URL(serverURL);
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setReadTimeout(5000);
+                httpURLConnection.setConnectTimeout(5000);
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.connect();
+
+                OutputStream outputStream = httpURLConnection.getOutputStream();
+                outputStream.write(postParameters.getBytes("UTF-8"));
+                outputStream.flush();
+                outputStream.close();
+
+                int responseStatusCode = httpURLConnection.getResponseCode();
+
+                Log.d("post", "response code - " + responseStatusCode);
+
+                InputStream inputStream;
+                if (responseStatusCode == HttpURLConnection.HTTP_OK) {
+                    inputStream = httpURLConnection.getInputStream();
+                } else {
+                    inputStream = httpURLConnection.getErrorStream();
+                }
+
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                bufferedReader.close();
+
+                Log.d("post", sb.toString());
+
+                return sb.toString().trim();
+
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+    }
+}
 
 //private class HJTask extends AsyncTask<Void, String, String> {
 //

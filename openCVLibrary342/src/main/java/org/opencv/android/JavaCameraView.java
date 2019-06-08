@@ -72,7 +72,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         boolean result = true;
         synchronized (this) {
             mCamera = null;
-
             if (mCameraIndex == CAMERA_ID_ANY) {
                 Log.d(TAG, "Trying to open camera with old open()");
                 try {
@@ -146,7 +145,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                 if (sizes != null) {
                     /* Select the size that fits surface considering maximum size allowed */
                     Size frameSize = calculateCameraFrameSize(sizes, new JavaCameraSizeAccessor(), width, height);
-
                     /* Image format NV21 causes issues in the Android emulators */
                     if (Build.FINGERPRINT.startsWith("generic")
                             || Build.FINGERPRINT.startsWith("unknown")
@@ -192,7 +190,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     int size = mFrameWidth * mFrameHeight;
                     size  = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
                     mBuffer = new byte[size];
-
+//                    mCamera.setDisplayOrientation(90);
                     mCamera.addCallbackBuffer(mBuffer);
                     mCamera.setPreviewCallbackWithBuffer(this);
 
@@ -211,7 +209,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         mCamera.setPreviewTexture(mSurfaceTexture);
                     } else
                        mCamera.setPreviewDisplay(null);
-
+//                    mCamera.setPreviewDisplay(getHolder());
                     /* Finally we are ready to start the preview */
                     Log.d(TAG, "startPreview");
                     mCamera.startPreview();
