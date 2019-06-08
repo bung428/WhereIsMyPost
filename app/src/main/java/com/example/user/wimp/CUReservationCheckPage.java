@@ -179,6 +179,7 @@ public class CUReservationCheckPage extends AppCompatActivity {
                 Log.d("jsoup",loginTryCookie.toString());
 
                 Map<String, String> data = new HashMap<>();
+                // 여기서 아이디 비번 입력해주어야할듯?
                 data.put("returnUrl", "");
 
                 org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://www.cupost.co.kr/postbox/common/logon.cupost")
