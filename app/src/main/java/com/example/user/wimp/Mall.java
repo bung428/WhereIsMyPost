@@ -44,13 +44,13 @@ public class Mall extends AppCompatActivity {
     final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36";
     //    final String USER_AGENT = "Mozilla/5.0 (Linux; Android 4.2.2; ko-kr; SAMSUNG SHV-E300K/KKUAME7 Build/JDQ39) AppleWebkit/535.19(KHTML, like Gecko) Version/1.0 Chrome/18.0.1025.308 Mobile Safari/535.19";
     final String LOGIN_FORM_URL = "https://login.coupang.com/login/login.pang?rtnUrl=http%3A%2F%2Fwww.coupang.com%2Fnp%2Fpost%2Flogin%3Fr%3D";
-    final String USERNAME = "goo428@naver.com";
-    final String PASSWORD = "qodrn326";
     String[] first = new String[3];
     String[] second = new String[3];
     String[] panguser;
     String[] gmarketuser;
     String msg;
+
+    ServerIP serverIP;
 
     ArrayList<String> mallConnect;
     ArrayList<String> mallDelete;
@@ -312,7 +312,7 @@ public class Mall extends AppCompatActivity {
             String mall_name = params[0];
             String mall_id = params[1];
             String mall_pwd = params[2];
-            String serverURL = "http://115.71.232.235/wimp/mall_delete.php";
+            String serverURL = serverIP.serverIp + "/wimp/mall_delete.php";
             String postParameters = "mall=" + mall_name  + "&id=" + mall_id  + "&pwd=" + mall_pwd;
             Log.d("mall","parameters "+mall_name+mall_id+mall_pwd);
 
@@ -544,8 +544,6 @@ public class Mall extends AppCompatActivity {
 //            data.put("PrmtreferURL","http://www.gmarket.co.kr/?redirect=1");
 //            data.put("FromWhere","G");
 //            data.put("member_yn","Y");
-//            data.put("id","goo428");
-//            data.put("pwd","qodrn326");
 //            data.put("saveid","");
 //
 //            org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://signinssl.gmarket.co.kr/LogIn/LogInProc")

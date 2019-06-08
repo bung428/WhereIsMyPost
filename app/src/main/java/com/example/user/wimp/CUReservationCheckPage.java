@@ -41,6 +41,8 @@ public class CUReservationCheckPage extends AppCompatActivity {
     String[] senderaddrdata;
     String[] receiveraddrdata;
     String senderaddrnum, senderaddrmid, receiveraddrnum, receiveraddrmid;
+
+    ServerIP serverIP;
     final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36";
 
     ArrayList<String> num = new ArrayList<>();
@@ -177,8 +179,6 @@ public class CUReservationCheckPage extends AppCompatActivity {
                 Log.d("jsoup",loginTryCookie.toString());
 
                 Map<String, String> data = new HashMap<>();
-                data.put("member_id", "goo428");
-                data.put("member_key", "qodrn3");
                 data.put("returnUrl", "");
 
                 org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://www.cupost.co.kr/postbox/common/logon.cupost")
@@ -364,7 +364,7 @@ public class CUReservationCheckPage extends AppCompatActivity {
             String sender = params[0];
             String receiver = params[1];
 
-            String serverURL = "http://115.71.232.235/wimp/savereserv.php";
+            String serverURL = serverIP.serverIp+"/wimp/savereserv.php";
             String postParameters = "sender=" + sender + "&receiver=" + receiver;
 
             Log.d("TAG", postParameters);
@@ -468,7 +468,7 @@ public class CUReservationCheckPage extends AppCompatActivity {
             String howtopay = params[10];
 
 
-            String serverURL = "http://115.71.232.235/wimp/savereservation.php";
+            String serverURL = serverIP.serverIp+"/wimp/savereservation.php";
             String postParameters = "sender=" + sender + "&senderphone=" + senderphone + "&senderaddr=" + senderaddr + "&postcategory=" + postcategory + "&postprice=" + postprice +
                     "&postreservname=" + postreservname + "&receiver=" + receiver + "&receiverphone=" + receiverphone + "&receiveraddr=" + receiveraddr + "&message=" + message + "&howtopay=" + howtopay;
 

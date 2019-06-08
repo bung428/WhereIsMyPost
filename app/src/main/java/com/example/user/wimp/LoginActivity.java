@@ -31,6 +31,8 @@ public class LoginActivity extends AppCompatActivity {
     CheckBox auto_sign_in;
     TextView results;
 
+    ServerIP serverIP;
+
     Boolean result, check;
     String id, pwd, message;
 
@@ -155,7 +157,7 @@ public class LoginActivity extends AppCompatActivity {
 
             String mem_id = params[0];
             String mem_pwd = params[1];
-            String serverURL = "http://115.71.232.235/wimp/login.php";
+            String serverURL = serverIP.serverIp + "/wimp/login.php";
             String postParameters = "id=" + mem_id  + "&pwd=" + mem_pwd;
 
             Log.d("TAG",mem_id+mem_pwd);

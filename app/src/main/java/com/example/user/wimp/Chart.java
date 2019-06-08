@@ -48,6 +48,8 @@ public class Chart extends AppCompatActivity {
 
     CategoryAdapter categoryAdapter;
 
+    ServerIP serverIP;
+
     TextView tv;
     ImageButton imageBtnList,imageBtnChart,imageBtnMypage,imageBtnChat;
     BarView barView;
@@ -312,7 +314,7 @@ public class Chart extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/category_classifier.php";
+            String serverURL = serverIP.serverIp+"/wimp/category_classifier.php";
             String postParameters = "id=" + id;
 
             Log.d("post", postParameters);

@@ -38,7 +38,8 @@ public class SocketService extends Service {
 
     final DBHelper dbHelper = new DBHelper(this, "ChatSave.db", null, 1);
 
-    String ip="115.71.232.235",port="9999",test,id;
+    ServerIP serverIP;
+    String ip=serverIP.serverIp,port="9999",test,id;
     boolean inChatRoom = false;
     ArrayList<String> loginUser;
 
@@ -260,7 +261,7 @@ public class SocketService extends Service {
                         sendMessage(sender,receiver,roomname,message,getTime);
 
                         if(message.contains(".jpg") || message.contains(".JPG") || message.contains(".png") || message.contains(".PNG")){
-                            message = "http://115.71.232.235/wimp/uploadimage/"+message;
+                            message = serverIP.serverIp+"/wimp/uploadimage/"+message;
                             dbHelper.insert(sender,id,message,getTime,false);
                         } else if(message.contains("우리 영상통화해요.")) {
                             String[] data = message.split("~~");

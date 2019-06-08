@@ -34,6 +34,8 @@ public class DetailCategory extends Activity {
     RecyclerView rvCategoryDetail;
     TextView titleCategory;
 
+    ServerIP serverIP;
+
     ArrayList<DetailCategoryItem> mItems = new ArrayList<>();
     DetailCategoryAdapter adapter;
 
@@ -135,7 +137,7 @@ public class DetailCategory extends Activity {
         @Override
         protected String doInBackground(String... params) {
             String category = params[0];
-            String serverURL = "http://115.71.232.235/wimp/category_get.php";
+            String serverURL = serverIP.serverIp+"/wimp/category_get.php";
             String postParameters = "category=" + category;
 
             Log.d("post", postParameters);

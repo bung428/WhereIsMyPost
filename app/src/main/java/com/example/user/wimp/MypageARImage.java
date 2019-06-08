@@ -41,6 +41,8 @@ public class MypageARImage extends Activity {
 
     ImageView arImage;
 
+    ServerIP serverIP;
+
     ArrayList<String> loginUser;
     String loginID;
     String imagename, uploading;
@@ -204,7 +206,7 @@ public class MypageARImage extends Activity {
         protected String doInBackground(String... params) {
 
             String mem_id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/member_page.php";
+            String serverURL = serverIP.serverIp+"/wimp/member_page.php";
             String postParameters = "id=" + mem_id;
 
             Log.d("TAG", postParameters);

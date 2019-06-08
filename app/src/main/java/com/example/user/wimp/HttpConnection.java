@@ -20,6 +20,8 @@ public class HttpConnection {
         return instance;
     }
 
+    ServerIP serverIP;
+
     private HttpConnection(){ this.client = new OkHttpClient(); }
 
 
@@ -39,7 +41,7 @@ public class HttpConnection {
                             .addFormDataPart("fileToUpload", imagefile[imagefile.length-1], RequestBody.create(MEDIA_TYPE, file))
                             .build();
                     Request request = new Request.Builder()
-                            .url("http://115.71.232.235/wimp/multipart_test.php")
+                            .url(serverIP.serverIp+"/wimp/multipart_test.php")
                             .post(body)
                             .build();
                     Log.d("아니 시바","뭔데");
@@ -63,7 +65,7 @@ public class HttpConnection {
                             .addFormDataPart("fileToUpload1", imagefile1[imagefile1.length-1], RequestBody.create(MEDIA_TYPE, file1))
                             .build();
                     Request request = new Request.Builder()
-                            .url("http://115.71.232.235/wimp/multipart_test.php")
+                            .url(serverIP.serverIp+"/wimp/multipart_test.php")
                             .post(bodys)
                             .build();
                     client.newCall(request).enqueue(callback);
@@ -90,7 +92,7 @@ public class HttpConnection {
                             .addFormDataPart("fileToUpload2", imagefile2[imagefile2.length-1], RequestBody.create(MEDIA_TYPE, file2))
                             .build();
                     Request request = new Request.Builder()
-                            .url("http://115.71.232.235/wimp/multipart_test.php")
+                            .url(serverIP.serverIp+"/wimp/multipart_test.php")
                             .post(bodys)
                             .build();
                     client.newCall(request).enqueue(callback);
@@ -122,7 +124,7 @@ public class HttpConnection {
                             .addFormDataPart("fileToUpload3", imagefile3[imagefile3.length-1], RequestBody.create(MEDIA_TYPE, file3))
                             .build();
                     Request request = new Request.Builder()
-                            .url("http://115.71.232.235/wimp/multipart_test.php")
+                            .url(serverIP.serverIp+"/wimp/multipart_test.php")
                             .post(bodys)
                             .build();
                     client.newCall(request).enqueue(callback);
@@ -158,7 +160,7 @@ public class HttpConnection {
                             .addFormDataPart("fileToUpload4", imagefile4[imagefile4.length-1], RequestBody.create(MEDIA_TYPE, file4))
                             .build();
                     Request request = new Request.Builder()
-                            .url("http://115.71.232.235/wimp/multipart_test.php")
+                            .url(serverIP.serverIp+"/wimp/multipart_test.php")
                             .post(bodys)
                             .build();
                     client.newCall(request).enqueue(callback);

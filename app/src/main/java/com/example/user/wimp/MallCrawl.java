@@ -63,6 +63,8 @@ public class MallCrawl extends AppCompatActivity {
     ImageView loadingimage;
     RecyclerView rvMall;
 
+    ServerIP serverIP;
+
     ArrayList<String> loginUser;
     String loginId, TAG = "몰 크롤 엑티비티 : ";
     String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
@@ -281,7 +283,7 @@ public class MallCrawl extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String mallname = params[0];
             String id = params[1];
-            String serverURL = "http://115.71.232.235/wimp/mallcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/mallcrawl.php";
             String postParameters = "mall=" + mallname + "&id=" + id;
 
             Log.d("post", postParameters);
@@ -374,7 +376,7 @@ public class MallCrawl extends AppCompatActivity {
             String mall_id = params[1];
             String mall_pwd = params[2];
             String id = params[3];
-            String serverURL = "http://115.71.232.235/wimp/mall_login.php";
+            String serverURL = serverIP.serverIp+"/wimp/mall_login.php";
             String postParameters = "mall=" + mall_name  + "&id=" + mall_id  + "&pwd=" + mall_pwd + "&loginid=" + id;
 
             Log.d("TAG", postParameters);

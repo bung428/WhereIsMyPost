@@ -47,6 +47,8 @@ public class Mypage extends AppCompatActivity {
 
     String loginID,imagename,uploading,profile;
 
+    ServerIP serverIP;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -223,7 +225,7 @@ public class Mypage extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             String mem_id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/member_page.php";
+            String serverURL = serverIP.serverIp+"/wimp/member_page.php";
             String postParameters = "id=" + mem_id;
 
             Log.d("TAG", postParameters);
@@ -359,7 +361,7 @@ public class Mypage extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String mem_id = params[0];
             String mem_arimage = params[1];
-            String serverURL = "http://115.71.232.235/wimp/member_page_update.php";
+            String serverURL = serverIP.serverIp+"/wimp/member_page_update.php";
             String postParameters = "id=" + mem_id + "&arimage=" + mem_arimage;
 
             Log.d("TAG", postParameters);

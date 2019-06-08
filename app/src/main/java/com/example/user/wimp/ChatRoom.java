@@ -74,6 +74,8 @@ public class ChatRoom extends AppCompatActivity {
     Handler handler;
     final int PICTURE_REQUEST_CODE = 100;
 
+    ServerIP serverIP;
+
     ClipData clipData;
     ArrayList<String> images = new ArrayList<>();
     private HttpConnection httpConn = HttpConnection.getInstance();
@@ -249,7 +251,7 @@ public class ChatRoom extends AppCompatActivity {
             intentsender = extras.getString("sender");
             intentimage = extras.getString("image");
             if(intentmsg.contains(".jpg") || intentmsg.contains(".JPG") || intentmsg.contains(".png") || intentmsg.contains(".PNG")){
-                intentmsg = "http://115.71.232.235/wimp/uploadimage/" + intentmsg;
+                intentmsg = serverIP.serverIp+"/wimp/uploadimage/" + intentmsg;
                 Log.d("노티다 새기야",intentsender+""+intentmsg);
             }else {
                 Log.d("노티다 새기야",intentsender+""+intentmsg);
@@ -296,7 +298,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                         }
                     } else {
@@ -309,7 +310,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                             recyclerItem.setUri(Uri.parse(chatting[2]));
                         }
@@ -326,7 +326,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                             recyclerItem.setUri(Uri.parse(chatting[2]));
                         }
@@ -340,7 +339,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                             recyclerItem.setUri(Uri.parse(chatting[2]));
                         }
@@ -357,7 +355,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                             recyclerItem.setUri(Uri.parse(chatting[2]));
                         }
@@ -371,7 +368,6 @@ public class ChatRoom extends AppCompatActivity {
 //                            if (chatting[2].contains("uploadimage")){
 //                                recyclerItem.setUri(Uri.parse(chatting[2]));
 //                            }else{
-//                                recyclerItem.setUri(Uri.parse("http://115.71.232.235/wimp/uploadimage/"+chatting[2]));
 //                            }
                             recyclerItem.setUri(Uri.parse(chatting[2]));
                         }
@@ -401,7 +397,7 @@ public class ChatRoom extends AppCompatActivity {
                             message = jsonObject.getString("message");
                             sender = jsonObject.getString("sender");
                             receiver = jsonObject.getString("receiver");
-                            imagepath = "http://115.71.232.235/wimp/uploadimage/" + message;
+                            imagepath = serverIP.serverIp+"/wimp/uploadimage/" + message;
                             Log.d("in second",message + sender + receiver + imagepath + Uri.parse(imagepath));
 
                             long now = System.currentTimeMillis();
@@ -836,7 +832,6 @@ public class ChatRoom extends AppCompatActivity {
                 for (int i = 0; i < clipData.getItemCount(); i++){
                     Log.d("이미지다 임마", getPath(clipData.getItemAt(i).getUri()));
                     String[] filename = getPath(clipData.getItemAt(i).getUri()).split("/");
-                    Log.d("리스폰스다 임마", "http://115.71.232.235/wimp/uploadimage/" + filename[filename.length - 1]);
 
                     long now = System.currentTimeMillis();
                     Date date = new Date(now);
@@ -844,11 +839,11 @@ public class ChatRoom extends AppCompatActivity {
                     String getTime = sdf.format(date);
 
                     if(chatter!=null) {
-                        dbHelper.insert(loginId, chatter, "http://115.71.232.235/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
+                        dbHelper.insert(loginId, chatter, serverIP.serverIp+"/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
                     }else if(chatter_name!=null){
-                        dbHelper.insert(loginId, chatter_name, "http://115.71.232.235/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
+                        dbHelper.insert(loginId, chatter_name, serverIP.serverIp+"/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
                     }else if(intentsender!=null){
-                        dbHelper.insert(loginId, intentsender, "http://115.71.232.235/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
+                        dbHelper.insert(loginId, intentsender, serverIP.serverIp+"/wimp/uploadimage/" + filename[filename.length - 1], getTime, false);
                     }
 
                     JSONObject jsonObject = new JSONObject();
@@ -1225,7 +1220,7 @@ public class ChatRoom extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String mem_id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/checkMember.php";
+            String serverURL = serverIP.serverIp+"/wimp/checkMember.php";
             String postParameters = "id=" + mem_id;
 
             Log.d("chat",mem_id);
@@ -1315,7 +1310,7 @@ public class ChatRoom extends AppCompatActivity {
 
             String roomname = params[0];
             String lasttext = params[1];
-            String serverURL = "http://115.71.232.235/wimp/chattingroomlistupdate.php";
+            String serverURL = serverIP.serverIp+"/wimp/chattingroomlistupdate.php";
             String postParameters = "roomname=" + roomname + "&lasttext=" + lasttext;
 
             Log.d("TAG", postParameters);

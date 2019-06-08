@@ -116,8 +116,6 @@ public class DetailReservation extends AppCompatActivity {
                 Log.d("jsoup",loginTryCookie.toString());
 
                 Map<String, String> data = new HashMap<>();
-                data.put("member_id", "goo428");
-                data.put("member_key", "qodrn3");
                 data.put("returnUrl", "");
 
                 org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://www.cupost.co.kr/postbox/common/logon.cupost")

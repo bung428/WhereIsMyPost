@@ -18,6 +18,7 @@ public class HttpConnectionARimage {
     public static HttpConnectionARimage getInstance() {
         return instance;
     }
+    ServerIP serverIP;
 
     private HttpConnectionARimage(){ this.client = new OkHttpClient(); }
 
@@ -37,7 +38,7 @@ public class HttpConnectionARimage {
                     .addFormDataPart("fileToUpload", imagefile[imagefile.length-1], RequestBody.create(MEDIA_TYPE, file))
                     .build();
             Request request = new Request.Builder()
-                    .url("http://115.71.232.235/wimp/imageupload.php")
+                    .url(serverIP.serverIp+"/wimp/imageupload.php")
                     .post(body)
                     .build();
             client.newCall(request).enqueue(callback);

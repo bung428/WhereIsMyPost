@@ -34,6 +34,8 @@ public class SignUp extends AppCompatActivity {
     Button signupBtn, signup_idckeckBtn;
     TextView results;
 
+    ServerIP serverIP;
+
     String id, pwd, pwd_check, phone, name, message;
 
     @Override
@@ -196,7 +198,7 @@ public class SignUp extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             String searchKeyword = params[0];
-            String serverURL = "http://115.71.232.235/wimp/idcheck.php";
+            String serverURL = serverIP.serverIp+"/wimp/idcheck.php";
             String postParameters = "id=" + searchKeyword;
 
             Log.d("TAG", postParameters);
@@ -287,7 +289,7 @@ public class SignUp extends AppCompatActivity {
 
             Log.d("data" ,"id = " + mem_id + "pwd = " + mem_pwd + "phone = " + mem_phone + "name = " + mem_name);
 
-            String serverURL = "http://115.71.232.235/wimp/test.php";
+            String serverURL = serverIP.serverIp+"/wimp/test.php";
             String postParameters = "name=" + mem_name + "&phone=" + mem_phone + "&pwd=" + mem_pwd + "&id=" + mem_id;
 
 

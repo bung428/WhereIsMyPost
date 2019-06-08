@@ -46,6 +46,8 @@ public class ChatActivity extends AppCompatActivity {
     RecyclerView chatlist;
     ChatRecyclerViewAdapter adapter;
 
+    ServerIP serverIP;
+
     Messenger mServiceMessenger = null;
     boolean isService=false;
     ServiceConnection conn = new ServiceConnection() {
@@ -422,7 +424,7 @@ public class ChatActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             String roomname = params[0];
-            String serverURL = "http://115.71.232.235/wimp/chattingroomlist.php";
+            String serverURL = serverIP.serverIp+"/wimp/chattingroomlist.php";
             String postParameters = "roomname=" + roomname;
 
             Log.d("TAG", postParameters);
@@ -511,7 +513,7 @@ public class ChatActivity extends AppCompatActivity {
 
             Log.d("data" ,"roomname = " + roomname + "sender = " + sender + "date = " + date + "lasttext = " + lasttext);
 
-            String serverURL = "http://115.71.232.235/wimp/chattingroom.php";
+            String serverURL = serverIP.serverIp+"/wimp/chattingroom.php";
             String postParameters = "roomname=" + roomname + "&sender=" + sender + "&receiver=" + receiver + "&date=" + date + "&lasttext=" + lasttext;
 
 
@@ -625,7 +627,7 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String meme_worker = params[0];
-            String serverURL = "http://115.71.232.235/wimp/checkMember.php";
+            String serverURL = serverIP.serverIp+"/wimp/checkMember.php";
             String postParameters = "worker=" + meme_worker;
 
             Log.d("chat",meme_worker);
@@ -735,7 +737,7 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String mem_id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/checkMember.php";
+            String serverURL = serverIP.serverIp+"/wimp/checkMember.php";
             String postParameters = "id=" + mem_id;
 
             Log.d("chat",mem_id);

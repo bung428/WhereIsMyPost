@@ -36,6 +36,8 @@ public class DetailPost extends AppCompatActivity {
 
     ArrayList<String> postInfo;
 
+    ServerIP serverIP;
+
     private ArrayList<RecyclerItemPostInfo> mItems = new ArrayList<>();
     PostRecyclerViewAdapter adapter;
 
@@ -223,7 +225,7 @@ public class DetailPost extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String mallname = params[0];
             String mallpostname = params[1];
-            String serverURL = "http://115.71.232.235/wimp/mallcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/mallcrawl.php";
             String postParameters = "mall=" + mallname + "&mallpostname=" + mallpostname;
 
             Log.d("post", postParameters);
@@ -353,7 +355,7 @@ public class DetailPost extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String pi_num = params[0];
             String pi_comp = params[1];
-            String serverURL = "http://115.71.232.235/wimp/cjcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
             String postParameters = "num=" + pi_num + "&company=" + pi_comp;
 
             Log.d("post", postParameters);

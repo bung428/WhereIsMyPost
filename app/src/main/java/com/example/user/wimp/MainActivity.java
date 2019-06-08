@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<RecyclerItem> mItems = new ArrayList<>();
     MyRecyclerViewAdapter adapter;
 
+    ServerIP serverIP;
+
     ImageButton imageBtnList,imageBtnChart,imageBtnMypage,imageBtnChat, imageBtnReserve;
     RecyclerView recyclerView;
 
@@ -513,7 +515,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String mallname = params[0];
             String id = params[1];
-            String serverURL = "http://115.71.232.235/wimp/mallcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/mallcrawl.php";
             String postParameters = "mall=" + mallname + "&id=" + id;
 
             Log.d("post", postParameters);
@@ -668,7 +670,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String pi_num = params[0];
             String pi_comp = params[1];
-            String serverURL = "http://115.71.232.235/wimp/cjcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
             String postParameters = "num=" + pi_num + "&company=" + pi_comp;
 
             Log.d("post", postParameters);

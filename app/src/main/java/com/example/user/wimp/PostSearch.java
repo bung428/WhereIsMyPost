@@ -47,6 +47,8 @@ public class PostSearch extends AppCompatActivity {
     JSONArray jsonArray;
     JSONObject jsonObject;
 
+    ServerIP serverIP;
+
     String company, goods, num, msg, number, message, mJsonString, TAG = "송장번호 화면",sendrNm,qty,itemNm,rcvrNm;
     Boolean value;
     String[] user;
@@ -401,7 +403,7 @@ public class PostSearch extends AppCompatActivity {
             String p_where = params[6];
             String p_comp = params[7];
             String userId = params[8];
-            String serverURL = "http://115.71.232.235/wimp/cjcrawl.php";
+            String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
             String postParameters =
                     "num=" + pi_num +  "&send=" + pi_send +  "&recv=" + pi_recv +  "&info=" + pi_info + "&level=" + p_level
                             + "&date=" + p_date + "&where=" + p_where + "&company=" + p_comp + "&userId=" + userId;

@@ -32,6 +32,8 @@ public class CUReservationEditSender extends AppCompatActivity {
     EditText midPhoneNum, lastPhoneNum, detailAddress, contentPriceEd, reservationNameEd;
     Button backBtn, nextBtn, addressBtn;
 
+    ServerIP serverIP;
+
     ArrayList<String> loginUser;
     String loginId, firstphoneNum, addressFeatAPI, fullAddress, loginName, fullPhoneNum, category, contentPrice, reservationName;
 
@@ -229,7 +231,7 @@ public class CUReservationEditSender extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             String mem_id = params[0];
-            String serverURL = "http://115.71.232.235/wimp/getuserdata.php";
+            String serverURL = serverIP.serverIp+"/wimp/getuserdata.php";
             String postParameters = "id=" + mem_id;
 
             Log.d("TAG",mem_id);

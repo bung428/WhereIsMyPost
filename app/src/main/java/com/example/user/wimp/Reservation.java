@@ -47,6 +47,9 @@ public class Reservation extends AppCompatActivity {
     ReservationAdapter adapter;
 
     String sender, receiver;
+
+    ServerIP serverIP;
+
     int j = 1;
 
     @Override
@@ -289,7 +292,7 @@ public class Reservation extends AppCompatActivity {
             String sender = params[0];
             String receiver = params[1];
 
-            String serverURL = "http://115.71.232.235/wimp/getreservation.php";
+            String serverURL = serverIP.serverIp+"/wimp/getreservation.php";
             String postParameters = "sender=" + sender + "&receiver=" + receiver;
 
             Log.d("post", postParameters);
