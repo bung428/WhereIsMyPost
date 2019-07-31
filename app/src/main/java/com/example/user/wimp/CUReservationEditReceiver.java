@@ -17,14 +17,16 @@ import android.widget.TextView;
 
 public class CUReservationEditReceiver extends AppCompatActivity {
 
-    EditText editReceiver, midPhoneNum, lastPhoneNum, detailAddress, postprice, wantMessageEdit;
-    Spinner firstPhoneNum, postcategory, wantMessage, howtopaySp;
-    TextView address, smallboxcountTv, bigboxcountTv;
+    EditText editReceiver, midPhoneNum, lastPhoneNum, detailAddress, postprice, wantMessageEdit, et_address;
+    Spinner firstPhoneNum, postcategory, wantMessage, howtopaySp, sp_selectCity;
+    TextView smallboxcountTv, bigboxcountTv;
     Button addressBtn, smallboxminusBtn, smallboxplusBtn, bigboxminusBtn, bigboxplusBtn, backBtn, nextBtn;
     CheckBox smallboxCheck, bigboxCheck;
 
-    String firstphoneNum, addressFeatAPI, fullAddress, category, message, senderInfo, fullPhoneNum, fullPostInfo, postBox, writemessage, receiverInfo, boxPrice, howtopay;
+    String city,firstphoneNum, addressFeatAPI, fullAddress, category, message, senderInfo, fullPhoneNum, fullPostInfo, postBox, writemessage, receiverInfo, boxPrice, howtopay;
     int smallboxcounting = 0, bigboxcounting = 0;
+
+    String TAG = "수신자 정보 엑티비티";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,24 +37,31 @@ public class CUReservationEditReceiver extends AppCompatActivity {
         midPhoneNum = findViewById(R.id.midPhoneNum);
         lastPhoneNum = findViewById(R.id.lastPhoneNum);
         detailAddress = findViewById(R.id.detailAddress);
-//        postprice = findViewById(R.id.postprice);
         firstPhoneNum = findViewById(R.id.firstPhoneNum);
-//        postcategory = findViewById(R.id.postcategory);
         wantMessage = findViewById(R.id.wantMessage);
-        address = findViewById(R.id.address);
-//        smallboxcountTv = findViewById(R.id.smallboxcountTv);
-//        bigboxcountTv = findViewById(R.id.bigboxcountTv);
         addressBtn = findViewById(R.id.addressBtn);
-//        smallboxminusBtn = findViewById(R.id.smallboxminusBtn);
-//        smallboxplusBtn = findViewById(R.id.smallboxplusBtn);
-//        bigboxminusBtn = findViewById(R.id.bigboxminusBtn);
-//        bigboxplusBtn = findViewById(R.id.bigboxplusBtn);
-//        smallboxCheck = findViewById(R.id.smallboxCheck);
-//        bigboxCheck = findViewById(R.id.bigboxCheck);
         backBtn = findViewById(R.id.backBtn);
         nextBtn = findViewById(R.id.nextBtn);
         wantMessageEdit = findViewById(R.id.wantMessageEdit);
         howtopaySp = findViewById(R.id.howtopaySp);
+        sp_selectCity = findViewById(R.id.selectCIty);
+        et_address = findViewById(R.id.address);
+
+        ArrayAdapter cityAdapter = ArrayAdapter.createFromResource(this,R.array.city,android.R.layout.simple_spinner_item);
+        cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sp_selectCity.setAdapter(cityAdapter);
+
+        sp_selectCity.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                city = adapterView.getItemAtPosition(i).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.phone,android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -63,13 +72,7 @@ public class CUReservationEditReceiver extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //각 항목 클릭시 포지션값을 토스트에 띄운다.
-//                Toast.makeText(getApplicationContext(), parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
                 firstphoneNum = parent.getItemAtPosition(position).toString();
-//                if(!midPhoneNum.getText().equals("") && !lastPhoneNum.getText().equals("")){
-//                    phoneNum = parent.getItemAtPosition(position).toString() + midPhoneNum.getText() + lastPhoneNum.getText();
-//
-//                    Log.d("phone num", phoneNum);
-//                }
             }
 
             @Override
@@ -87,13 +90,7 @@ public class CUReservationEditReceiver extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //각 항목 클릭시 포지션값을 토스트에 띄운다.
-//                Toast.makeText(getApplicationContext(), parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
                 howtopay = parent.getItemAtPosition(position).toString();
-//                if(!midPhoneNum.getText().equals("") && !lastPhoneNum.getText().equals("")){
-//                    phoneNum = parent.getItemAtPosition(position).toString() + midPhoneNum.getText() + lastPhoneNum.getText();
-//
-//                    Log.d("phone num", phoneNum);
-//                }
             }
 
             @Override
@@ -101,27 +98,6 @@ public class CUReservationEditReceiver extends AppCompatActivity {
 
             }
         });
-
-//        ArrayAdapter categoryadapter = ArrayAdapter.createFromResource(this,R.array.category,android.R.layout.simple_spinner_item);
-//        categoryadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//        postcategory.setAdapter(categoryadapter);
-//        postcategory.setSelection(0);
-//
-//        //스피너 이벤트 발생
-//        postcategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                //각 항목 클릭시 포지션값을 토스트에 띄운다.
-////                Toast.makeText(getApplicationContext(), parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
-//                category = parent.getItemAtPosition(position).toString();
-//                Log.d("카테고리는? ", category);
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//
-//            }
-//        });
 
         ArrayAdapter messageadapter = ArrayAdapter.createFromResource(this,R.array.messgae,android.R.layout.simple_spinner_item);
         messageadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -155,10 +131,6 @@ public class CUReservationEditReceiver extends AppCompatActivity {
 
         Intent i = getIntent();
         if(i.getStringExtra("address") != null){
-//            Log.d("주소왔다", i.getStringExtra("address"));
-            //주소 api를 받아와서 텍스트 뷰에 넣어놨다.
-            addressFeatAPI = i.getStringExtra("address");
-            address.setText(addressFeatAPI);
 
         }else if (i.getStringExtra("senderInfo") != null){
             senderInfo = i.getStringExtra("senderInfo");
@@ -168,103 +140,11 @@ public class CUReservationEditReceiver extends AppCompatActivity {
         addressBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(CUReservationEditReceiver.this, AddressAct.class);
+                Intent i = new Intent(CUReservationEditReceiver.this, DaumWebViewActivity.class);
                 i.putExtra("activity", "cureservationreceiver");
                 startActivity(i);
             }
         });
-
-//        smallboxCheck.setChecked(false);
-//        bigboxCheck.setChecked(false);
-
-//        smallboxCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-//                if(smallboxCheck.isChecked()){
-//                    //극소형 박스를 선택하였을 때 -> 극소형박스 카운트 올려주기
-//                    smallboxcountTv.setText("1");
-//                }else{
-//                    //극소형 박스 카운트 0으로 바꾸기
-//                    smallboxcountTv.setText("0");
-//                }
-//            }
-//        });
-//
-//        bigboxCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-//                if(bigboxCheck.isChecked()){
-//                    //중형 박스를 선택하였을 때 -> 극소형박스 카운트 올려주기
-//                    bigboxcountTv.setText("1");
-//                }else{
-//                    //중형 박스 카운트 0으로 바꾸기
-//                    bigboxcountTv.setText("0");
-//                }
-//            }
-//        });
-//
-//        smallboxminusBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                //극소형 카운트가 0이면 더 이상 변화없게
-//                smallboxcounting = Integer.parseInt(smallboxcountTv.getText().toString());
-//                Log.d("극소형 박스 갯수", smallboxcounting+"");
-//                smallboxcounting = smallboxcounting - 1;
-//                if(smallboxcounting <= 0 ){
-//                    smallboxcountTv.setText("0");
-//                    smallboxCheck.setChecked(false);
-//                }else{
-//                    smallboxcountTv.setText(smallboxcounting+"");
-//                    if(smallboxcounting <= 0 ){
-//                        smallboxCheck.setChecked(false);
-//                    }
-//                }
-//            }
-//        });
-//
-//        smallboxplusBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                //극소형 카운트가 0보다 크게되면 극소형 체크박스 = true되게
-//                smallboxcounting = Integer.parseInt(smallboxcountTv.getText().toString());
-//                smallboxcounting = smallboxcounting + 1;
-//                if(smallboxcounting > 0){
-//                    smallboxCheck.setChecked(true);
-//                    smallboxcountTv.setText(smallboxcounting+"");
-//                }
-//            }
-//        });
-//
-//        bigboxminusBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                //중형 카운트가 0이면 더 이상 변화없게
-//                bigboxcounting = Integer.parseInt(bigboxcountTv.getText().toString());
-//                bigboxcounting = bigboxcounting - 1;
-//                if(bigboxcounting < 0){
-//                    bigboxcountTv.setText("0");
-//                    bigboxCheck.setChecked(false);
-//                }else{
-//                    bigboxcountTv.setText(bigboxcounting+"");
-//                    if(bigboxcounting <= 0 ){
-//                        bigboxCheck.setChecked(false);
-//                    }
-//                }
-//            }
-//        });
-//
-//        bigboxplusBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                //중형 카운트가 0보다 크게되면 중형 체크박스 = true되게
-//                bigboxcounting = Integer.parseInt(bigboxcountTv.getText().toString());
-//                bigboxcounting = bigboxcounting + 1;
-//                if(bigboxcounting > 0){
-//                    bigboxCheck.setChecked(true);
-//                    bigboxcountTv.setText(bigboxcounting+"");
-//                }
-//            }
-//        });
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,40 +173,28 @@ public class CUReservationEditReceiver extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        if(!detailAddress.getText().toString().equals("")){
-            //상세 주소까지 입력한 경우
-            //주소 합쳐서 변수로 가지고 있자
-            fullAddress = addressFeatAPI + detailAddress.getText().toString();
-            Log.d("주소 합쳐졌나? receiver", fullAddress);
+        String address = "";
+        if(!et_address.getText().toString().equals("") && !city.equals("") && !detailAddress.getText().toString().equals("")){
+            // 주소방식 바꿨다. 스피너로 시를 받고 + 도로명주소 + 상세주소를 합쳐야할지 나눌지 정하자.
+            Log.d(TAG,city+", "+et_address.getText().toString()+", "+detailAddress.getText().toString());
+            address = city+"##"+et_address.getText().toString()+"##"+detailAddress.getText().toString();
         }
 
-        if(!midPhoneNum.getText().toString().equals("") && !lastPhoneNum.getText().toString().equals(""))
-            fullPhoneNum = firstphoneNum + midPhoneNum.getText().toString() + lastPhoneNum.getText().toString();
-
-//        if(!postprice.equals("")){
-//            fullPostInfo = category + "!!!!" + postprice.getText().toString();
-//        }
-
-//        if(Integer.parseInt(smallboxcountTv.getText().toString()) > 0) {
-//            postBox = "극소형 " + Integer.parseInt(smallboxcountTv.getText().toString());
-//            boxPrice = "3,300";
-//        }
-//
-//        if(Integer.parseInt(bigboxcountTv.getText().toString()) > 0){
-//            postBox = "중형 " + Integer.parseInt(bigboxcountTv.getText().toString());
-//            boxPrice = "3,800";
-//        }
+        if(!midPhoneNum.getText().toString().equals("") && !lastPhoneNum.getText().toString().equals("")) {
+            Log.d(TAG, firstphoneNum + "-" + midPhoneNum.getText().toString() + "-" + lastPhoneNum.getText().toString());
+            fullPhoneNum = firstphoneNum + "-" + midPhoneNum.getText().toString() + "-" + lastPhoneNum.getText().toString();
+        }
 
         if(!wantMessageEdit.getText().toString().equals("")) {
             writemessage = wantMessageEdit.getText().toString();
         }
 
         if(message.equals("")){
-            receiverInfo = editReceiver.getText().toString() + "##" + fullPhoneNum + "##" + fullAddress + "##" + writemessage + "##" + howtopay;
-            Log.d("받는 이 정보", receiverInfo);
+            receiverInfo = editReceiver.getText().toString() + "##" + fullPhoneNum + "##" + address + "##" + writemessage + "##" + howtopay;
+            Log.d(TAG, receiverInfo);
         }else{
-            receiverInfo = editReceiver.getText().toString() + "##" + fullPhoneNum + "##" + fullAddress + "##" + message + "##" + howtopay;
-            Log.d("받는 이 정보", receiverInfo);
+            receiverInfo = editReceiver.getText().toString() + "##" + fullPhoneNum + "##" + address + "##" + message + "##" + howtopay;
+            Log.d(TAG, receiverInfo);
         }
 
         SharedPreferences preferences = getSharedPreferences("reservation", MODE_PRIVATE);

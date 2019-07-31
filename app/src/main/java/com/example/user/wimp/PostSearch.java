@@ -39,6 +39,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
+
 public class PostSearch extends AppCompatActivity {
 
     EditText postNum;
@@ -48,6 +60,7 @@ public class PostSearch extends AppCompatActivity {
     JSONObject jsonObject;
 
     ServerIP serverIP;
+    APIService apiService;
 
     String company, goods, num, msg, number, message, mJsonString, TAG = "송장번호 화면",sendrNm,qty,itemNm,rcvrNm;
     Boolean value;
@@ -62,7 +75,7 @@ public class PostSearch extends AppCompatActivity {
 
     String loginId;
 
-    ConnDBCj connDBCj;
+    CJPost cjPost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,9 +254,6 @@ public class PostSearch extends AppCompatActivity {
                             case "CJ대한통운":
                                 CJTask cjTask = new CJTask();
                                 cjTask.execute();
-
-                                Intent intent1 = new Intent(PostSearch.this, MainActivity.class);
-                                startActivity(intent1);
                                 break;
                             case "한진택배":
 //                                HJTask hjTask = new HJTask();
@@ -331,8 +341,6 @@ public class PostSearch extends AppCompatActivity {
                 itemNm = jsonArray.getJSONObject(0).getString("itemNm");
                 rcvrNm = jsonArray.getJSONObject(0).getString("rcvrNm");
 
-                Log.d(TAG, "doInBackground: 조회결과 "+sendrNm+" "+qty+" "+itemNm+" "+rcvrNm);
-
                 jsonObject = new JSONObject(parcelDetailResultMap);
                 jsonArray = new JSONArray(jsonObject.getString("resultList"));
                 for (int i=0; i<jsonArray.length(); i++) {
@@ -341,14 +349,18 @@ public class PostSearch extends AppCompatActivity {
                     regBranNm.add(jsonArray.getJSONObject(i).getString("regBranNm"));
                     scanNm.add(jsonArray.getJSONObject(i).getString("scanNm"));
                 }
+
+                Log.d(TAG, "doInBackground: 조회결과 "+sendrNm+" "+qty+" "+itemNm+" "+rcvrNm);
+                // 샌더 : 회사이름 qty : 갯수 item : 카테고리 rcvr : 받는사람이름
                 for (int i=0; i<crgNm.size(); i++) {
                     Log.d(TAG, "doInBackground: 조회상태 "+crgNm.get(i)+" "+dTime.get(i)+" "+regBranNm.get(i)+" "+scanNm.get(i));
                 }
+                // crg 배송 메시지 regbrand 위치 scan 레벨
 
                 // 위에 뽑아둔 데이터를 디비에 저장하여 메인으로 이동하여 뿌려주도록하자.
-                connDBCj = new ConnDBCj();
                 // 레트로핏으로 arraylist 보내기 하자.
-                connDBCj.execute(num, sendrNm, rcvrNm, crgNm.get(0), scanNm.get(0), dTime.get(0), regBranNm.get(0), company, loginId);
+                cjPost = new CJPost(num, sendrNm, rcvrNm, crgNm, scanNm, dTime, regBranNm, company, loginId);
+                CJInsertDB(cjPost);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
@@ -359,102 +371,96 @@ public class PostSearch extends AppCompatActivity {
         }
     }
 
-    private class ConnDBCj extends AsyncTask<String, Void, String> {
-        ProgressDialog progressDialog;
-        String errorString = null;
+    public void CJInsertDB(CJPost cjPost) {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        Observable.just("")
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .map(new Function<String, Boolean>()
+                {
+                    @Override
+                    public Boolean apply(String s) throws Exception
+                    {
+                        try
+                        {
+                            Log.d(TAG, "시작 바로 전");
+                            apiService = APIClient.getClient1().create(APIService.class);
+                            Call<ResponseBody> callServer = apiService.cjInsert(cjPost.getNum(), cjPost.getPi_send(), cjPost.getPi_recv(),
+                                    cjPost.getPi_info(), cjPost.getP_level(), cjPost.getP_date(), cjPost.getP_where(), cjPost.getCompany(), cjPost.getP_userId());
 
-            progressDialog = ProgressDialog.show(PostSearch.this,
-                    "Please Wait", null, true, true);
-        }
+                            callServer.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        String msg = response.body().string();
+                                        Log.d(TAG, "onResponse: 서버로부터 응답 in retrofit "+msg);
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            progressDialog.dismiss();
+                                        switch (msg) {
+                                            case "success" :
+                                                Log.d(TAG, "switch success : 디비에 새로운 데이터 저장 성공 -> 뷰에 갱신");
 
-            Log.d(TAG, "onPostExecute: 서버응답"+result.toString());
-//            if (result == null) {
-//                Toast.makeText(PostSearch.this, "already have", Toast.LENGTH_SHORT).show();
-//                Intent i = new Intent(PostSearch.this, MainActivity.class);
-//                startActivity(i);
-//            } else {
-//                mJsonString = result.toString();
-//                Log.d("post", "json" + mJsonString);
-//
-//                Intent i = new Intent(PostSearch.this, MainActivity.class);
-//                i.putExtra("json", mJsonString);
-//                startActivity(i);
-//
-//            }
-        }
+                                                Intent intent = new Intent(PostSearch.this, MainActivity.class);
+                                                intent.putExtra("postNum", cjPost.getNum());
+                                                intent.putExtra("company", cjPost.getCompany());
+                                                startActivity(intent);
+                                                break;
+                                            case "fail" :
+                                                Log.d(TAG, "switch fail: 디비에 데이터 저장 실패");
+                                                break;
+                                            case "nothing" :
+                                                Log.d(TAG, "switch nothing: 저장할 필요 없음 -> 갱신 노필요");
+                                                showToast();
+                                                break;
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
 
-        @Override
-        protected String doInBackground(String... params) {
-            String pi_num = params[0];
-            String pi_send = params[1];
-            String pi_recv = params[2];
-            String pi_info = params[3];
-            String p_level = params[4];
-            String p_date = params[5];
-            String p_where = params[6];
-            String p_comp = params[7];
-            String userId = params[8];
-            String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
-            String postParameters =
-                    "num=" + pi_num +  "&send=" + pi_send +  "&recv=" + pi_recv +  "&info=" + pi_info + "&level=" + p_level
-                            + "&date=" + p_date + "&where=" + p_where + "&company=" + p_comp + "&userId=" + userId;
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    // 콜백 실패
+                                    Log.d(TAG, "onFailure: 콜백 실패");
+                                    Log.e(TAG, "onFailure: ", t);
+                                }
+                            });
+                        }
+                        catch(Exception e) {
+                            // 통신 실패
 
-            Log.d("post", postParameters);
-            try {
-                URL url = new URL(serverURL);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setReadTimeout(5000);
-                httpURLConnection.setConnectTimeout(5000);
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.connect();
+                            Log.d(TAG, "onFailure: 통신 실패");
+                            Log.e(TAG, "apply: ", e);
+                        }
 
-                OutputStream outputStream = httpURLConnection.getOutputStream();
-                outputStream.write(postParameters.getBytes("UTF-8"));
-                outputStream.flush();
-                outputStream.close();
+                        return true;
+                    }
+                }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Boolean>()
+                {
+                    @Override
+                    public void onSubscribe(Disposable d)
+                    {
+                        Log.d(TAG, "onSubscribe : "+d);
+                    }
+                    @Override
+                    public void onNext(Boolean s)
+                    {
+                        Log.d(TAG, "onNext: "+s);
+                    }
 
-                int responseStatusCode = httpURLConnection.getResponseCode();
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "onError: "+e);
+                    }
+                    @Override
+                    public void onComplete()
+                    {
+                    }
+                });
+    }
 
-                Log.d("post", "response code - " + responseStatusCode);
-
-                InputStream inputStream;
-                if (responseStatusCode == HttpURLConnection.HTTP_OK) {
-                    inputStream = httpURLConnection.getInputStream();
-                } else {
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                StringBuilder sb = new StringBuilder();
-                String line;
-
-                while ((line = bufferedReader.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                bufferedReader.close();
-
-                Log.d("post", sb.toString());
-
-                return sb.toString().trim();
-
-            } catch (IOException e) {
-                return null;
-            }
-        }
-
+    public void showToast() {
+        Toast.makeText(this, "추가 할 정보가 없습니다.", Toast.LENGTH_SHORT).show();
     }
 }
 

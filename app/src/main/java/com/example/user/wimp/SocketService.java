@@ -39,7 +39,7 @@ public class SocketService extends Service {
     final DBHelper dbHelper = new DBHelper(this, "ChatSave.db", null, 1);
 
     ServerIP serverIP;
-    String ip=serverIP.serverIp,port="9999",test,id;
+    String ip=serverIP.chatServer,port="9999",test,id;
     boolean inChatRoom = false;
     ArrayList<String> loginUser;
 

@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,9 +52,21 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MallCrawl extends AppCompatActivity {
 
     String message,mall,id,pwd,mJsonString;
+    String gmarketUser, gmarketLevel;
     Boolean crawl=false;
 
     Button button;
@@ -64,12 +75,25 @@ public class MallCrawl extends AppCompatActivity {
     RecyclerView rvMall;
 
     ServerIP serverIP;
+    APIService apiService;
 
     ArrayList<String> loginUser;
+    ArrayList<String> itemName = new ArrayList<>();
+    ArrayList<String> itemArray = new ArrayList<>();
+    ArrayList<String> quantity = new ArrayList<>();
+    ArrayList<String> priceDiscount = new ArrayList<>();
+    ArrayList<String> discounts = new ArrayList<>();
+    ArrayList<String> priceOrginal = new ArrayList<>();
+    ArrayList<String> price = new ArrayList<>();
     String loginId, TAG = "몰 크롤 엑티비티 : ";
     String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36";
 
+    JSONArray jsonArray;
+    JSONObject jsonObject;
 
+    GmarketCart gmarketCart;
+    GetData getData;
+    CheckData checkData;
 
     private ArrayList<LittleMallItem> mItems = new ArrayList<>();
     LittleAdapter adapter;
@@ -109,6 +133,7 @@ public class MallCrawl extends AppCompatActivity {
         }
 
         SharedPreferences preferences=getSharedPreferences("mall",MODE_PRIVATE);
+
         if (preferences.getString(mall,null)==null){
             Log.d("mall","no id pwd");
         }else{
@@ -183,20 +208,35 @@ public class MallCrawl extends AppCompatActivity {
             pwd=user[1];
             Log.d("mall crawl", "복호화 "+ id + pwd);
         }
-        CheckData checkData = new CheckData();
+        /*
+
+        1. 지마켓 테이블에 값이 있는지 없는지 체크.
+        2. 있다면 뷰에 보여주고 없다면 상품없다고 텍스트뷰 띄워주기.
+        3. 그와 동시에 지마켓 크롤링 돌린다.
+        4. 크롤링 데이터와 지마켓 테이블 값을 비교후 저장할지 안해도될지를 정해줄 통신을 한다.
+        5. 4번 후 값에 변화가 있다면 뷰를 갱신해준다.
+
+        */
+
+        checkData = new CheckData();
         switch (mall) {
             case "pang":
-//                Toast.makeText(MallCrawl.this, mall+id+pwd, Toast.LENGTH_SHORT).show();
                 checkData.execute(mall, id, pwd, loginId);
                 break;
             case "gmarket":
-//                Toast.makeText(MallCrawl.this, mall+id+pwd, Toast.LENGTH_SHORT).show();
                 checkData.execute(mall, id, pwd, loginId);
                 break;
         }
 
-        GetData getData = new GetData();
+        getData = new GetData();
+        Log.d(TAG, "아이디: "+loginId);
         getData.execute(mall, loginId);
+
+//        LoginGmarketTask loginGmarketTask = new LoginGmarketTask();
+//        loginGmarketTask.execute();
+
+        // 위의 async는 크롤링까지만 하였으니 디비 저장부분을 이어서 진행하자.
+        // gmarketLevel, gmarketUser, quantity, priceOrginal, priceDiscount, itemName
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,6 +252,221 @@ public class MallCrawl extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 //        super.onBackPressed();
+    }
+
+    private class LoginGmarketTask extends AsyncTask<Void, String, GmarketCart> {
+
+        @Override
+        protected void onPostExecute(GmarketCart gmarketCart) {
+            super.onPostExecute(gmarketCart);
+//            4. 크롤링 데이터와 지마켓 테이블 값을 비교 후 저장할지 안해도될지를 정해 줄 통신을 한다.
+//            5. 4번 후 값에 변화가 있다면 뷰를 갱신해준다.
+            GmarketInsertDB(gmarketCart);
+        }
+
+        @Override
+        protected GmarketCart doInBackground(Void... voids) {
+            try {
+//                org.jsoup.Connection.Response response = Jsoup.connect("https://signinssl.gmarket.co.kr/login/login")
+//                        .method(org.jsoup.Connection.Method.GET)
+//                        .timeout(10000)
+//                        .header("User-Agent",USER_AGENT)
+//                        .header("Referer","http://www.gmarket.co.kr/")
+//                        .header("Upgrade-Insecure-Requests","1")
+//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+//                        .header("Accept-Encoding","gzip, deflate, br")
+//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+//                        .ignoreContentType(true)
+//                        .execute();
+//
+//                Map<String, String> loginTryCookie = response.cookies();
+//                Document loginresponse = response.parse();
+//
+//                Map<String, String> data = new HashMap<>();
+//                data.put("command", "login");
+//                data.put("url","http://www.gmarket.co.kr/");
+//                data.put("member_type","MEM");
+//                data.put("keyFlag", "off");
+//                data.put("member_yn","Y");
+//                data.put("id", "goo428");
+//                data.put("pwd","qudrnqkdrn9!");
+//                data.put("PrmtDisp","0");
+//                data.put("x","0");
+//                data.put("y","0");
+//
+//                org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://signinssl.gmarket.co.kr/LogIn/LogInProc")
+//                        .method( org.jsoup.Connection.Method.POST)
+//                        .timeout(10000)
+//                        .header("User-Agent",USER_AGENT)
+//                        .header("Referer","http://www.gmarket.co.kr/")
+//                        .header("Upgrade-Insecure-Requests","1")
+//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+//                        .header("Accept-Encoding","gzip, deflate, br")
+//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+//                        .ignoreContentType(true)
+//                        .cookies(loginTryCookie)
+//                        .data(data)
+//                        .execute();
+//
+//                Map<String, String> sessioncookie = loginResponse.cookies();
+//
+//                Document doc = Jsoup.connect("https://cart.gmarket.co.kr/ko/cart")
+//                        .timeout(15000)
+//                        .userAgent(USER_AGENT)
+//                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
+//                        .header("Accept-Encoding","gzip, deflate")
+//                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+//                        .header("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+//                        .cookies(sessioncookie)
+//                        .method( org.jsoup.Connection.Method.GET)
+//                        .get();
+//
+//                String content = doc.html();
+//                Log.d(TAG, "doInBackground: "+doc.html());
+//                gmarketLevel = doc.title();
+//                gmarketUser = loginId;
+//
+//                content = content.substring(content.indexOf("JSON.parse"),content.indexOf("getApiPrefix"));
+//                content = content.substring(content.indexOf("cartUnitList"), content.indexOf("currentCartTab"));
+//                content = content.substring(content.indexOf("["), content.lastIndexOf("]")+1);
+//
+//                jsonArray = new JSONArray(content);
+//                Log.d(TAG, "itemsssssssssss: "+jsonArray.length());
+//
+//                for (int i=0; i<jsonArray.length(); i++) {
+//                    jsonObject = jsonArray.getJSONObject(i);
+//
+//                    itemArray.add("["+jsonObject.getString("item")+"]");
+//                    quantity.add(jsonObject.getString("quantity"));
+//                    if (jsonObject.getString("discounts").equals("")) {
+//                        discounts.add("0");
+//                    }
+//                    discounts.add(jsonObject.getString("discounts"));
+//                }
+//
+//                for (int j=0; j<discounts.size(); j++) {
+//                    jsonArray = new JSONArray(discounts.get(j));
+//
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+//                        jsonObject = jsonArray.getJSONObject(i);
+//                        priceDiscount.add(jsonObject.getString("discountPrice"));
+//                    }
+//                }
+//
+//                for (int i=0; i<itemArray.size(); i++) {
+//                    jsonArray = new JSONArray(itemArray.get(i));
+//
+//                    for (int j=0 ; j<jsonArray.length(); j++) {
+//                        jsonObject = jsonArray.getJSONObject(j);
+//                        itemName.add(jsonObject.getString("itemName"));
+//                        priceOrginal.add(jsonObject.getString("itemSellPrice"));
+//                    }
+//                }
+
+                gmarketCart = new GmarketCart(itemName, quantity, priceOrginal, gmarketLevel, gmarketUser);
+
+            }
+            catch (Exception e) {
+
+            }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+
+            return gmarketCart;
+        }
+    }
+
+    public void GmarketInsertDB(GmarketCart gmarketCart) {
+
+        for (int a=0; a<gmarketCart.getG_price().size(); a++)
+            Log.d(TAG, "GmarketInsertDB: "+"g_info: "+gmarketCart.getG_info().get(a)+"g_cnt: "+gmarketCart.getG_cnt().get(a)+"g_price: "+
+                    gmarketCart.getG_price().get(a)+"g_level: "+gmarketCart.getG_level()+"g_userid: "+gmarketCart.getG_userid());
+
+        Observable.just("")
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .map(new Function<String, Boolean>()
+                {
+                    @Override
+                    public Boolean apply(String s) throws Exception
+                    {
+                        try
+                        {
+                            Log.d(TAG, "시작 바로 전");
+                            apiService = APIClient.getClient1().create(APIService.class);
+                            Call<ResponseBody> callServer = apiService.gmarketInsert(gmarketCart.getG_info(), gmarketCart.getG_cnt(), gmarketCart.getG_price(),
+                                    gmarketCart.getG_level(), gmarketCart.getG_userid());
+
+                            callServer.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        String msg = response.body().string();
+                                        Log.d(TAG, "onResponse: 서버로부터 응답 in retrofit "+msg);
+
+                                        switch (msg) {
+                                            case "success" :
+                                                Log.d(TAG, "switch success : 디비에 새로운 데이터 저장 성공 -> 뷰에 갱신");
+
+                                                getData.execute(mall, loginId);
+                                                break;
+                                            case "fail" :
+                                                Log.d(TAG, "switch fail: 디비에 데이터 저장 실패");
+                                                break;
+                                            case "nothing" :
+                                                Log.d(TAG, "switch nothing: 저장할 필요 없음 -> 갱신 노필요");
+                                                showToast();
+                                                break;
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    // 콜백 실패
+                                    Log.d(TAG, "onFailure: 콜백 실패");
+                                    Log.e(TAG, "onFailure: ", t);
+                                }
+                            });
+                        }
+                        catch(Exception e) {
+                            // 통신 실패
+
+                            Log.d(TAG, "onFailure: 통신 실패");
+                            Log.e(TAG, "apply: ", e);
+                        }
+
+                        return true;
+                    }
+                }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Boolean>()
+                {
+                    @Override
+                    public void onSubscribe(Disposable d)
+                    {
+                        Log.d(TAG, "onSubscribe : "+d);
+                    }
+                    @Override
+                    public void onNext(Boolean s)
+                    {
+                        Log.d(TAG, "onNext: "+s);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "onError: "+e);
+                    }
+                    @Override
+                    public void onComplete()
+                    {
+                    }
+                });
     }
 
     private class GetData extends AsyncTask<String, Void, String> {
@@ -230,9 +485,8 @@ public class MallCrawl extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             progressDialog.dismiss();
-//            results.setText(result);
-//            mItems.clear();
             Log.d("post", "response - " + result);
+
             if (result == null) {
                 Toast.makeText(MallCrawl.this, "already have", Toast.LENGTH_SHORT).show();
             } else {
@@ -336,38 +590,30 @@ public class MallCrawl extends AppCompatActivity {
 
     private class CheckData extends AsyncTask<String, Void, String> {
 
-//        ProgressDialog progressDialog;
         String errorString = null;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
-//            progressDialog = ProgressDialog.show(MallCrawl.this,
-//                    "Please Wait", null, true, true);
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-//            Log.d("TAG", "response - " + result);
             if (result == null){
                 Toast.makeText(MallCrawl.this, "error", Toast.LENGTH_SHORT).show();
             }
             else {
-//                Toast.makeText(LoginActivity.this, result.toString(), Toast.LENGTH_SHORT).show();
                 message = result.toString();
                 Log.d("mall", "hi" +  message);
                 if(message.equals("db have data")) {
                     Log.d("mall","서버 디비에 이미 저장된 부분");
-                    // 크롤링 시작
                 }else {
                     Log.d("mall","서버 디비에 저장해야하는 쿼리문 써야할 부분");
                 }
             }
-//            progressDialog.dismiss();
-
         }
 
         @Override
@@ -450,6 +696,10 @@ public class MallCrawl extends AppCompatActivity {
 //            mItems.add(new RecyclerItem(name));
 //        }
         // 데이터 추가가 완료되었으면 notifyDataSetChanged() 메서드를 호출해 데이터 변경 체크를 실행합니다.
+    }
+
+    public void showToast() {
+        Toast.makeText(this, "추가된 상품이 없습니다.", Toast.LENGTH_SHORT).show();
     }
 
     @Override

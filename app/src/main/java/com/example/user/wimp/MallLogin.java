@@ -143,7 +143,7 @@ public class MallLogin extends AppCompatActivity {
                         KeyPair kp = kpg.genKeyPair();
                         publicKey = kp.getPublic();
                         privateKey = kp.getPrivate();
-
+                        Log.d("hihi", "onPause: hihi");
                         try {
                             FileOutputStream pubkey = new FileOutputStream(Environment.getDataDirectory() +"/data/com.example.user.opencvcmake/files/"+mall+".pub");
                             pubkey.write(publicKey.getEncoded());

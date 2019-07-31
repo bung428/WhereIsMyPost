@@ -30,11 +30,12 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="79dp"
+        android:weightSum="3"
         android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/firstPhoneNum"
-            android:layout_width="wrap_content"
+            android:layout_width="50dp"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
@@ -42,13 +43,13 @@
 
         <EditText
             android:id="@+id/midPhoneNum"
-            android:layout_width="wrap_content"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
         <EditText
             android:id="@+id/lastPhoneNum"
-            android:layout_width="wrap_content"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
     </LinearLayout>
@@ -64,29 +65,42 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/address"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center|start"
-                android:hint="집하주소" />
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/selectCIty"
+                    android:layout_width="140dp"
+                    android:layout_height="match_parent" />
+
+                <EditText
+                    android:id="@+id/address"
+                    android:layout_marginStart="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textSize="14dp"
+                    android:gravity="center"
+                    android:hint="도로명 주소 ex)오금로54길 10" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/detailAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14dp"
+                android:hint="(상세주소 입력)" />
 
             <Button
+                android:visibility="gone"
                 android:id="@+id/addressBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="우편번호 검색" />
         </LinearLayout>
-
-        <EditText
-            android:id="@+id/detailAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="(상세주소 입력)" />
 
     </LinearLayout>
 
@@ -116,8 +130,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="129dp"
+        android:layout_marginBottom="100dp"
         android:orientation="vertical">
 
         <LinearLayout
@@ -126,16 +139,14 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:text="품목선택"
-                android:layout_weight="1"/>
+                android:text="품목선택" />
 
             <Spinner
                 android:id="@+id/choiceCategorySp"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="2">
+                android:layout_width="150dp"
+                android:layout_height="30dp">
 
             </Spinner>
         </LinearLayout>
@@ -146,26 +157,23 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="match_parent"
                 android:gravity="start|center"
-                android:text="물품가액"
-                android:layout_weight="1"/>
+                android:text="물품가액" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
                 android:orientation="horizontal">
                 <EditText
                     android:id="@+id/contentPriceEd"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="14dp"
                     android:text="만원"/>
             </LinearLayout>
         </LinearLayout>
@@ -176,10 +184,9 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:text="예약명"
-                android:layout_weight="1"/>
+                android:text="예약명" />
 
             <EditText
                 android:id="@+id/reservationNameEd"

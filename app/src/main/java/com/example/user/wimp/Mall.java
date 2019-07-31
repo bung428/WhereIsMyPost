@@ -18,6 +18,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +40,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 
@@ -402,6 +408,8 @@ public class Mall extends AppCompatActivity {
         return true;
     }
 
+
+
 }
 //
 //private class LoginPangTask extends AsyncTask<Void, String, String> {
@@ -500,123 +508,3 @@ public class Mall extends AppCompatActivity {
 //    }
 //}
 //
-//private class LoginGmarketTask extends AsyncTask<Void, String, String> {
-//
-//    @Override
-//    protected void onPostExecute(String result) {
-//        super.onPostExecute(result);
-//
-////            String[] data = result.split("@@");
-////
-////            text.setText(data[0]);
-////            text1.setText(data[1]);
-////            text2.setText(data[2]);
-//    }
-//
-//    @Override
-//    protected String doInBackground(Void... voids) {
-//        try {
-//            org.jsoup.Connection.Response response = Jsoup.connect("https://signinssl.gmarket.co.kr/login/login")
-//                    .method(org.jsoup.Connection.Method.GET)
-//                    .timeout(10000)
-//                    .header("User-Agent",USER_AGENT)
-//                    .header("Referer","http://www.gmarket.co.kr/")
-////                        .header("Origin", "")
-//                    .header("Upgrade-Insecure-Requests","1")
-//                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                    .header("Accept-Encoding","gzip, deflate, br")
-//                    .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-//                    .ignoreContentType(true)
-//                    .execute();
-//
-//            Map<String, String> loginTryCookie = response.cookies();
-////                Log.d("jsoup","cookie = "+loginTryCookie.toString());
-//
-//            Map<String, String> data = new HashMap<>();
-//            data.put("command", "login");
-//            data.put("valid_url","");
-//            data.put("valid_key","");
-//            data.put("member_type", "MEM");
-//            data.put("untrustCheck","");
-//            data.put("FailCheck", "0");
-//            data.put("url","http%3a%2f%2fwww.gmarket.co.kr%2f%3fredirect%3d1");
-//            data.put("PrmtDisp","Y");
-//            data.put("PrmtreferURL","http://www.gmarket.co.kr/?redirect=1");
-//            data.put("FromWhere","G");
-//            data.put("member_yn","Y");
-//            data.put("saveid","");
-//
-//            org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://signinssl.gmarket.co.kr/LogIn/LogInProc")
-//                    .method( org.jsoup.Connection.Method.POST)
-//                    .timeout(10000)
-//                    .header("User-Agent",USER_AGENT)
-//                    .header("Referer","http://www.gmarket.co.kr/")
-////                        .header("Origin", "")
-//                    .header("Upgrade-Insecure-Requests","1")
-//                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                    .header("Accept-Encoding","gzip, deflate, br")
-//                    .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-////                        .header("Cookie", "pguid=21509902905926004802010000; PCUID=15099029147898807219039; cguid=11408441208298002652000000; cto_lwid=63ebc832-5554-4324-acf3-9353638c1cb5; WMONID=Q2LWbN6QsUL; charset=enUS; shipnation=KR; sguid=31531476343841002082267000; WingFlag=R; ssguid=315314763438410020822670001; RPM=BT%3DL1531476343586; user%5Finfo=isNego=N; BASKET%5FCALLBACK%5FSTAT=F; Sif=fbcbb620c74ec330ad91053f5ccd5448; gmktloadingtimecheck=N; Pif=67D4D3B7BEF59864807172B536401566D790B3149F07E2CEC1710E9DC5E64C010884C2F7A1B9C505EABCC70DAD88B047; cc=CHM1A007")
-//                    .ignoreContentType(true)
-//                    .cookies(loginTryCookie)
-//                    .data(data)
-//                    .execute();
-//
-//            Map<String, String> sessioncookie = loginResponse.cookies();
-////                Log.d("jsoup","login cookie = "+sessioncookie.toString());
-////              "http://cart.coupang.com/cartView.pang"
-//            Document doc = Jsoup.connect("http://escrow.gmarket.co.kr/ko/cart")
-//                    .timeout(15000)
-//                    .userAgent(USER_AGENT)
-//                    .header("Upgrade-Insecure-Requests","1")
-//                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-//                    .header("Accept-Encoding","gzip, deflate")
-//                    .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-//                    .header("Cache-Control","max-age=0")
-//                    .header("Connection","keep-alive")
-//                    .header("Host","escrow.gmarket.co.kr")
-//                    .header("Referer","http://www.gmarket.co.kr/")
-//                    .header("Upgrade-Insecure-Requests","1")
-////                        .header("Cookie","pguid=21509902905926004802010000; PCUID=15099029147898807219039; cguid=11408441208298002652000000; cto_lwid=63ebc832-5554-4324-acf3-9353638c1cb5; WMONID=Q2LWbN6QsUL; charset=enUS; shipnation=KR; sguid=31531476343841002082267000; WingFlag=R; ssguid=315314763438410020822670001; RPM=BT%3DL1531476343586; user%5Finfo=isNego=N; BASKET%5FCALLBACK%5FSTAT=F; Sif=fbcbb620c74ec330ad91053f5ccd5448; gmktloadingtimecheck=N; Pif=67D4D3B7BEF59864807172B536401566D790B3149F07E2CEC1710E9DC5E64C010884C2F7A1B9C505EABCC70DAD88B047; cc=CHM1A007")
-//                    .cookies(sessioncookie)
-//                    .method( org.jsoup.Connection.Method.GET)
-//                    .get();
-//
-//            Element element=doc.select("script").eq(3).first();
-//
-////                JsonParser jsonParser = new JsonParser();
-////                JsonArray jsonArray = (JsonArray) jsonParser.parse(element.text());
-////
-////                for(int i=0;i<jsonArray.size();i++){
-////                    JsonObject jsonObject = (JsonObject) jsonArray.get(i);
-////                    Log.d("jsoup","itemName"+jsonObject.get("itemName"));
-////                }
-//
-//            Log.d("jsoup","element "+element.data());
-//
-//
-////                JSONObject jsonObject=new JSONObject(element.text());
-////                JSONArray jsonArray=(JSONArray)((JSONArray)jsonObject.get("itemName")).get(0);
-//
-////                Log.d("jsoup","test"+element.text());
-////                for(Element little : element) {
-////                    String aaa = little.html();
-////                    Log.d("jsoup", "i want? "+aaa);
-////                }
-////                for(int i=0;i<jsonArray.length();i++){
-////                    String item=(String)((JSONArray)jsonArray.get(i)).get(0);
-////                    Log.d("jsoup","item"+item);
-////                }
-////                Log.d("jsoup","html "+doc.outerHtml());
-//
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-////            catch (JSONException e) {
-////                e.printStackTrace();
-////            }
-//
-//        return null;
-//    }
-//}

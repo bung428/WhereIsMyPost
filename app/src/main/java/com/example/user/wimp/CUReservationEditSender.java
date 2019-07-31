@@ -27,15 +27,17 @@ import java.util.Set;
 
 public class CUReservationEditSender extends AppCompatActivity {
 
-    TextView username, address;
-    Spinner firstPhoneNum, choiceCategorySp;
-    EditText midPhoneNum, lastPhoneNum, detailAddress, contentPriceEd, reservationNameEd;
+    TextView username;
+    Spinner firstPhoneNum, choiceCategorySp, sp_selectCity;
+    EditText midPhoneNum, lastPhoneNum, detailAddress, contentPriceEd, reservationNameEd, et_address;
     Button backBtn, nextBtn, addressBtn;
 
     ServerIP serverIP;
 
     ArrayList<String> loginUser;
-    String loginId, firstphoneNum, addressFeatAPI, fullAddress, loginName, fullPhoneNum, category, contentPrice, reservationName;
+    String city, loginId, firstphoneNum, addressFeatAPI, fullAddress, loginName, fullPhoneNum, category, contentPrice, reservationName;
+    String TAG = "발신자 정보 엑티비티";
+    private static final int SEARCH_ADDRESS_ACTIVITY = 10000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +45,7 @@ public class CUReservationEditSender extends AppCompatActivity {
         setContentView(R.layout.cureservationsender);
 
         username = findViewById(R.id.username);
-        address = findViewById(R.id.address);
+        et_address = findViewById(R.id.address);
         firstPhoneNum = findViewById(R.id.firstPhoneNum);
         midPhoneNum = findViewById(R.id.midPhoneNum);
         lastPhoneNum = findViewById(R.id.lastPhoneNum);
@@ -54,6 +56,23 @@ public class CUReservationEditSender extends AppCompatActivity {
         choiceCategorySp = findViewById(R.id.choiceCategorySp);
         contentPriceEd = findViewById(R.id.contentPriceEd);
         reservationNameEd = findViewById(R.id.reservationNameEd);
+        sp_selectCity = findViewById(R.id.selectCIty);
+
+        ArrayAdapter cityAdapter = ArrayAdapter.createFromResource(this,R.array.city,android.R.layout.simple_spinner_item);
+        cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sp_selectCity.setAdapter(cityAdapter);
+
+        sp_selectCity.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                city = adapterView.getItemAtPosition(i).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.phone,android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -64,13 +83,7 @@ public class CUReservationEditSender extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //각 항목 클릭시 포지션값을 토스트에 띄운다.
-//                Toast.makeText(getApplicationContext(), parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
                 firstphoneNum = parent.getItemAtPosition(position).toString();
-//                if(!midPhoneNum.getText().equals("") && !lastPhoneNum.getText().equals("")){
-//                    phoneNum = parent.getItemAtPosition(position).toString() + midPhoneNum.getText() + lastPhoneNum.getText();
-//
-//                    Log.d("phone num", phoneNum);
-//                }
             }
 
             @Override
@@ -118,30 +131,17 @@ public class CUReservationEditSender extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Intent i = getIntent();
-        if(i.getStringExtra("address") != null){
-//            Log.d("주소왔다", i.getStringExtra("address"));
-            //주소 api를 받아와서 텍스트 뷰에 넣어놨다.
-            addressFeatAPI = i.getStringExtra("address");
-            address.setText(addressFeatAPI);
 
-        }
 
-//        if(!detailAddress.getText().toString().equals("")){
-//            //상세 주소까지 입력한 경우
-//            //주소 합쳐서 변수로 가지고 있자
-//            fullAddress = addressFeatAPI + detailAddress.getText().toString();
-//            Log.d("주소 합쳐졌나? sender", fullAddress);
-//        }
-
-        addressBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(CUReservationEditSender.this, AddressAct.class);
-                i.putExtra("activity", "cureservationsender");
-                startActivity(i);
-            }
-        });
+//        addressBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent i = new Intent(CUReservationEditSender.this, TEST.class);
+//                i.putExtra("activity", "cureservationsender");
+////                startActivity(i);
+//                startActivityForResult(i, SEARCH_ADDRESS_ACTIVITY);
+//            }
+//        });
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,22 +162,24 @@ public class CUReservationEditSender extends AppCompatActivity {
         });
     }
 
+
     @Override
     protected void onPause() {
         super.onPause();
-
-        if(!detailAddress.getText().toString().equals("")){
-            //상세 주소까지 입력한 경우
-            //주소 합쳐서 변수로 가지고 있자
-            fullAddress = addressFeatAPI + detailAddress.getText().toString();
-            Log.d("주소 합쳐졌나? sender", fullAddress);
+        String address = "";
+        if(!et_address.getText().toString().equals("") && !city.equals("") && !detailAddress.getText().toString().equals("")){
+            // 주소방식 바꿨다. 스피너로 시를 받고 + 도로명주소 + 상세주소를 합쳐야할지 나눌지 정하자.
+            Log.d(TAG,city+", "+et_address.getText().toString()+", "+detailAddress.getText().toString());
+            address = city+"##"+et_address.getText().toString()+"##"+detailAddress.getText().toString();
         }
 
-        if(!midPhoneNum.getText().toString().equals("") && !lastPhoneNum.getText().toString().equals(""))
-            fullPhoneNum = firstphoneNum + midPhoneNum.getText().toString() + lastPhoneNum.getText().toString();
+        if(!midPhoneNum.getText().toString().equals("") && !lastPhoneNum.getText().toString().equals("")) {
+            Log.d(TAG, firstphoneNum + "-" + midPhoneNum.getText().toString() + "-" + lastPhoneNum.getText().toString());
+            fullPhoneNum = firstphoneNum + "-" + midPhoneNum.getText().toString() + "-" + lastPhoneNum.getText().toString();
+        }
 
-        String senderInfo = loginName + "##" + fullPhoneNum + "##" +fullAddress;
-        Log.d("senderpage info", senderInfo);
+        String senderInfo = loginName + "##" + fullPhoneNum + "##" +address;
+        Log.d(TAG,"발신자정보 쉐어드에 들어갈 값"+senderInfo);
 
         if(!contentPriceEd.getText().toString().equals(""))
             contentPrice = contentPriceEd.getText().toString();
@@ -187,7 +189,7 @@ public class CUReservationEditSender extends AppCompatActivity {
 
         //물품정보 내역 모아서 저장해보자
         String contentInfo = category + "##" + contentPrice + "##" + reservationName;
-        Log.d("contentInfo info", contentInfo);
+        Log.d(TAG, "물품정보"+contentInfo);
 
         SharedPreferences preferences = getSharedPreferences("reservation", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();

@@ -35,7 +35,7 @@
             <Spinner
                 android:id="@+id/firstPhoneNum"
                 android:layout_weight="1"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="match_parent">
 
             </Spinner>
@@ -43,61 +43,76 @@
             <EditText
                 android:id="@+id/midPhoneNum"
                 android:layout_weight="1"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content" />
 
             <EditText
                 android:id="@+id/lastPhoneNum"
                 android:layout_weight="1"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/address"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center|start"
-                    android:layout_weight="1"
-                    android:hint="집하주소" />
+                    android:layout_height="40dp"
+                    android:orientation="horizontal">
+
+                    <Spinner
+                        android:id="@+id/selectCIty"
+                        android:layout_width="140dp"
+                        android:layout_height="match_parent" />
+
+                    <EditText
+                        android:id="@+id/address"
+                        android:layout_marginStart="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textSize="14dp"
+                        android:gravity="center"
+                        android:hint="도로명 주소 ex)오금로54길 10" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/detailAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14dp"
+                    android:hint="(상세주소 입력)" />
 
                 <Button
+                    android:visibility="gone"
                     android:id="@+id/addressBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="우편번호 검색"/>
+                    android:text="우편번호 검색" />
             </LinearLayout>
-
-            <EditText
-                android:id="@+id/detailAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="(상세주소 입력)" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_marginBottom="15dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="지불방법"
+                android:gravity="center|start"
                 android:layout_weight="1"/>
 
             <Spinner
@@ -238,7 +253,7 @@
             android:id="@+id/wantMessage"
 
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="40dp">
 
         </Spinner>
 

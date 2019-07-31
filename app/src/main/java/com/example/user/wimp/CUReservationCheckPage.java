@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -28,21 +30,36 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class CUReservationCheckPage extends AppCompatActivity {
 
     Button backBtn, nextBtn;
     TextView boxcountTv, postpriceTv, sendernameTv, senderphonenumTv, senderaddressTv, sendermessageTv, receivernameTv, receiverphonenumTv, receiveraddressTv, receiverboxcountTv, receiverpostinfoTv, howtopayTv, contentpriceTv, contentinfoTv, reservationnameTv;
 
     String senderInfo, receiverInfo, contentInfo;
-    String sender, senderphonenum, senderaddr, sendermsg, receiver, receiverphonenum, receiveraddr, howtopaymoney, postcategory, postprice, postreservationname, reservewant;
+    String sender, senderphonenum, senderaddr, sendermsg, receiver, receiverphonenum, receiveraddr, howtopaymoney, postprice, postreservationname;
     String[] senderdata;
     String[] receiverdata;
     String[] contentdata;
     String[] senderaddrdata;
+    String[] senderphonedata;
     String[] receiveraddrdata;
-    String senderaddrnum, senderaddrmid, receiveraddrnum, receiveraddrmid;
+    String[] receiverphonedata;
+    String senderaddrnum, senderaddrmid, receiveraddrnum, receiveraddrmid, TAG = "CU 편의점 예약 전 페이지";
+    int postcategory;
 
     ServerIP serverIP;
+    APIService apiService;
     final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36";
 
     ArrayList<String> num = new ArrayList<>();
@@ -53,8 +70,6 @@ public class CUReservationCheckPage extends AppCompatActivity {
 
         backBtn = findViewById(R.id.backBtn);
         nextBtn = findViewById(R.id.nextBtn);
-//        boxcountTv = findViewById(R.id.boxcountTv);
-//        postpriceTv = findViewById(R.id.postpriceTv);
         sendernameTv = findViewById(R.id.sendernameTv);
         senderphonenumTv = findViewById(R.id.senderphonenumTv);
         senderaddressTv = findViewById(R.id.senderaddressTv);
@@ -62,8 +77,6 @@ public class CUReservationCheckPage extends AppCompatActivity {
         receivernameTv = findViewById(R.id.receivernameTv);
         receiverphonenumTv = findViewById(R.id.receiverphonenumTv);
         receiveraddressTv = findViewById(R.id.receiveraddressTv);
-//        receiverboxcountTv = findViewById(R.id.receiverboxcountTv);
-//        receiverpostinfoTv = findViewById(R.id.receiverpostinfoTv);
         howtopayTv = findViewById(R.id.howtopayTv);
         contentpriceTv = findViewById(R.id.contentpriceTv);
         contentinfoTv = findViewById(R.id.contentinfoTv);
@@ -77,52 +90,76 @@ public class CUReservationCheckPage extends AppCompatActivity {
             Log.d("확인 페이지", senderInfo + "/" + receiverInfo + "/" + contentInfo);
 
             senderdata = senderInfo.split("##");
+            //[0] : 이름 / [1] : 전번 - 로 split해야함 / [2] : 주소 [3] [4]
             receiverdata = receiverInfo.split("##");
+            //[0] 이름 / [1] 번호 - split go / [2] 주소 [3] [4] / [5] 배송요청사항 / [6] 선불
             contentdata = contentInfo.split("##");
+            // [0] 카테고리 / [1] 가격 / [2] 예약명
 
-            senderaddrdata = senderdata[2].split("\\s");
-            senderaddrnum = senderaddrdata[0].substring(1,6);
-            Log.d("보낸이 주소 ", "우편번호? " + senderaddrnum);
-            senderaddrmid = senderaddrdata[1] + " " + senderaddrdata[2] + " " + senderaddrdata[3] + " " + senderaddrdata[4];
-            Log.d("보낸이 주소 ", "중간? " + senderaddrmid);
-            Log.d("보낸이 주소 ", "마지막? " + senderaddrdata[5]);
+            senderphonedata = senderdata[1].split("-");
+            Log.d(TAG, "발신자 이름: "+senderdata[0]);
+            Log.d(TAG, "발신자 번호: "+senderphonedata[0] + "-" + senderphonedata[1] + "-" + senderphonedata[2]);
+            Log.d(TAG, "발신자 주소: "+senderdata[2] + ", " + senderdata[3] + ", " + senderdata[4]);
 
-            receiveraddrdata = receiverdata[2].split("\\s");
-            receiveraddrnum = receiveraddrdata[0].substring(1,6);
-            Log.d("받는이 주소 ", "우편번호? " + receiveraddrnum);
-            receiveraddrmid = receiveraddrdata[1] + " " + receiveraddrdata[2] + " " + receiveraddrdata[3] + " " + receiveraddrdata[4];
-            Log.d("받는이 주소 ", "중간? " + receiveraddrmid);
-            Log.d("받는이 주소 ", "마지막? " + receiveraddrdata[5]);
+            receiverphonedata = receiverdata[1].split("-");
+            Log.d(TAG, "수신자 이름: "+receiverdata[0]);
+            Log.d(TAG, "수신자 번호: "+receiverphonedata[0] + "-" + receiverphonedata[1] + "-" + receiverphonedata[2]);
+            Log.d(TAG, "수신자 주소: "+receiverdata[2] + ", " + receiverdata[3] + ", " + receiverdata[4]);
+            Log.d(TAG, "수신자 배송요청사항: "+receiverdata[5]);
+            Log.d(TAG, "수신자 선불: "+receiverdata[4]);
 
-            howtopayTv.setText(receiverdata[4]);
+            howtopayTv.setText(receiverdata[6]);
             contentpriceTv.setText(contentdata[1] + "만원");
             contentinfoTv.setText(contentdata[0]);
             reservationnameTv.setText(contentdata[2]);
 
             sendernameTv.setText(senderdata[0]);
-            senderphonenumTv.setText(senderdata[1]);
-            senderaddressTv.setText(senderdata[2]);
-            sendermessageTv.setText(receiverdata[3]);
+            senderphonenum = senderphonedata[0] + "-" + senderphonedata[1] + "-" + senderphonedata[2];
+            senderphonenumTv.setText(senderphonenum);
+            senderaddr = senderdata[2] + ", " + senderdata[3] + ", " + senderdata[4];
+            senderaddressTv.setText(senderaddr);
+            sendermessageTv.setText(receiverdata[5]);
 
             receivernameTv.setText(receiverdata[0]);
-            receiverphonenumTv.setText(receiverdata[1]);
-            receiveraddressTv.setText(receiverdata[2]);
-//            receiverboxcountTv.setText(receiverdata[4]);
-//            receiverpostinfoTv.setText(info[0]+"( " + info[1] + "원 )");
-            sender = senderdata[0];
-            senderphonenum = senderdata[1];
-            senderaddr = senderdata[2];
-            sendermsg = receiverdata[3];
+            receiverphonenum = receiverphonedata[0] + "-" + receiverphonedata[1] + "-" + receiverphonedata[2];
+            receiverphonenumTv.setText(receiverphonenum);
+            receiveraddr = receiverdata[2] + ", " + receiverdata[3] + ", " + receiverdata[4];
+            receiveraddressTv.setText(receiveraddr);
 
+            sender = senderdata[0];
+            sendermsg = receiverdata[5];
             receiver = receiverdata[0];
             receiverphonenum = receiverdata[1];
-            receiveraddr = receiverdata[2];
-            howtopaymoney = receiverdata[4];
+            howtopaymoney = receiverdata[6];
 
-            postcategory = contentdata[0];
+            switch (contentdata[0]) {
+                case "의류" :
+                    postcategory = 1;
+                    break;
+                case "서신/서류" :
+                    postcategory = 2;
+                    break;
+                case "가전제품류" :
+                    postcategory = 3;
+                    break;
+                case "과일류" :
+                    postcategory = 4;
+                    break;
+                case "곡물류" :
+                    postcategory = 5;
+                    break;
+                case "한약류" :
+                    postcategory = 6;
+                    break;
+                case "식품류" :
+                    postcategory = 7;
+                    break;
+                case "잡화/서적" :
+                    postcategory = 8;
+                    break;
+            }
             postprice = contentdata[1];
             postreservationname = contentdata[2];
-            reservewant = "true";
         }
 
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -136,393 +173,106 @@ public class CUReservationCheckPage extends AppCompatActivity {
         nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //예약
-                LoginPangTask loginPangTask = new LoginPangTask();
-                loginPangTask.execute();
-//                SaveData saveData = new SaveData();
-//                saveData.execute(sender,senderphonenum,senderaddr,postcategory,postprice,postreservationname,receiver,receiverphonenum,receiveraddr,sendermsg,howtopaymoney);
+                // 로그인 먼저
+                LoginDialog loginDialog = new LoginDialog(CUReservationCheckPage.this);
+                loginDialog.setDialogListener(new LoginDialog.LoginDialogListner() {
+                    @Override
+                    public void onPositiveClicked(String id, String pw) {
+                        if (id != "" && pw != "") {
+                            Log.d(TAG, "onPositiveClicked: 하위 ! ");
+                            reserve(id, pw);
+                        }
+                    }
+                });
+
+                loginDialog.show();
             }
         });
     }
 
-    private class LoginPangTask extends AsyncTask<Void, ArrayList<String>, ArrayList<String>> {
+    public void reserve (String id, String pw) {
+        Observable.just("")
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .map(new Function<String, Boolean>()
+                {
+                    @Override
+                    public Boolean apply(String s) throws Exception
+                    {
+                        try
+                        {
+                            apiService = APIClient.getClient1().create(APIService.class);
 
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-            super.onPostExecute(result);
-//            for (int i = 0; i < result.size(); i++)
-//                System.out.println("온 포스트"+result.get(i));
+                            Call<ResponseBody> callServer = apiService.reserveCU(id, pw, postcategory+"", postprice,postreservationname,sender,
+                                    receiverphonedata[0],receiverphonedata[1],receiverphonedata[2],receiverdata[2],receiverdata[3],receiverdata[4],receiverdata[5]);
 
-            Intent intent = new Intent(CUReservationCheckPage.this, Reservation.class);
-            intent.putStringArrayListExtra("numlist", result);
-            startActivity(intent);
-        }
+                            callServer.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        String msg = response.body().string();
+                                        Log.d(TAG, "onResponse: 서버로부터 응답 in retrofit "+msg);
+                                        Intent i;
+                                        switch (msg){
+                                            case "success":
+                                                i = new Intent(CUReservationCheckPage.this, Reservation.class);
+                                                startActivity(i);
+                                                finish();
+                                                break;
+                                            case "fail":
+                                                break;
+                                            case "nothing" :
+                                                i = new Intent(CUReservationCheckPage.this, Reservation.class);
+                                                startActivity(i);
+                                                finish();
+                                                break;
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
 
-        @Override
-        protected ArrayList<String> doInBackground(Void... voids) {
-            try {
-                org.jsoup.Connection.Response response = Jsoup.connect("https://www.cupost.co.kr/postbox/common/login.cupost")
-                        .method(org.jsoup.Connection.Method.GET)
-                        .timeout(5000)
-                        .header("User-Agent",USER_AGENT)
-                        .header("Referer","https://www.cupost.co.kr/postbox/main.cupost")
-                        .header("Origin", "https://login.coupang.com")
-                        .header("Upgrade-Insecure-Requests","1")
-                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-                        .header("Accept-Encoding","gzip, deflate, br")
-                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-                        .header("Connection","keep-alive")
-                        .ignoreContentType(true)
-                        .execute();
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    // 콜백 실패
+                                    Log.d(TAG, "onFailure: 콜백 실패");
+                                    Log.e(TAG, "onFailure: ", t);
+                                }
+                            });
+                        }
+                        catch(Exception e) {
+                            // 통신 실패
+                            Log.d(TAG, "onFailure: 실패2");
+                            Log.e(TAG, "apply: ", e);
+                        }
 
-                Map<String, String> loginTryCookie = response.cookies();
-                Log.d("jsoup",loginTryCookie.toString());
+                        return true;
+                    }
+                }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Boolean>()
+                {
+                    @Override
+                    public void onSubscribe(Disposable d)
+                    {
+                        Log.d(TAG, "onSubscribe 11111"+d);
+                    }
+                    @Override
+                    public void onNext(Boolean s)
+                    {
+                        Log.d(TAG, "onNext 2222"+s);
+                    }
 
-                Map<String, String> data = new HashMap<>();
-                // 여기서 아이디 비번 입력해주어야할듯?
-                data.put("returnUrl", "");
-
-                org.jsoup.Connection.Response loginResponse = Jsoup.connect("https://www.cupost.co.kr/postbox/common/logon.cupost")
-                        .method( org.jsoup.Connection.Method.POST)
-                        .timeout(7000)
-                        .header("User-Agent",USER_AGENT)
-                        .header("Referer","https://www.cupost.co.kr/postbox/local/member/reservation.cupost")
-                        .header("Connection","keep-alive")
-                        .header("Origin","https://www.cupost.co.kr")
-                        .header("Content-Type","application/x-www-form-urlencoded")
-//                        .header("Content-Length","738")
-                        .header("Upgrade-Insecure-Requests","1")
-                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-                        .header("Accept-Encoding","gzip, deflate, br")
-                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-                        .ignoreContentType(true)
-                        .cookies(loginTryCookie)
-                        .data(data)
-                        .execute();
-
-                Document main = Jsoup.connect("https://www.cupost.co.kr/postbox/main.cupost")
-                        .timeout(7000)
-                        .userAgent(USER_AGENT)
-                        .header("Upgrade-Insecure-Requests","1")
-                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-                        .header("Accept-Encoding","gzip, deflate, br")
-                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-                        .header("Referer", "https://www.cupost.co.kr/postbox/common/login.cupost")
-                        .header("Connection", "keep-alive")
-                        .cookies(loginTryCookie)
-                        .get();
-//                System.out.println("메인떳니???"+main);
-
-                Map<String, String> sessioncookie = loginResponse.cookies();
-
-                Map<String, String> reservdata = new HashMap<>();
-                if(contentdata[0].equals("의류"))
-                    reservdata.put("goods_kind", "01");//카테고리 01=의류 02=....
-                else if(contentdata[0].equals("서신/서류"))
-                    reservdata.put("goods_kind", "02");
-                else if(contentdata[0].equals("가전제품류"))
-                    reservdata.put("goods_kind", "03");
-                else if(contentdata[0].equals("과일류"))
-                    reservdata.put("goods_kind", "04");
-                else if(contentdata[0].equals("곡물류"))
-                    reservdata.put("goods_kind", "05");
-                else if(contentdata[0].equals("한약류"))
-                    reservdata.put("goods_kind", "06");
-                else if(contentdata[0].equals("식품류"))
-                    reservdata.put("goods_kind", "07");
-                else if(contentdata[0].equals("잡화/서적"))
-                    reservdata.put("goods_kind", "08");
-                else if(contentdata[0].equals("편의점행사상품"))
-                    reservdata.put("goods_kind", "09");
-                reservdata.put("trans_code", "1");
-                reservdata.put("reserved_counter", "1");
-                reservdata.put("real_sender_telno", senderdata[1]);//보낼이 번호
-                reservdata.put("exemption_agree", "Y");
-                reservdata.put("max_counter", "1");
-                reservdata.put("goods_price", contentdata[1]);//물품가격
-                reservdata.put("reserved_comments", contentdata[2]);//예약명
-                reservdata.put("addSel", "on");
-                reservdata.put("real_sender_name", senderdata[0]);//보낼이 이름
-                reservdata.put("real_sender_post_no", senderaddrnum);//우편번호
-                reservdata.put("real_sender_addr", senderaddrmid);//주소중간내용
-                reservdata.put("real_sender_detaddr", senderaddrdata[5]);//상세주소
-                reservdata.put("receiver_telno_0", receiverdata[1]);//받을분번호
-                reservdata.put("receiver_telno2_0", "");
-                reservdata.put("receiver_name_0", receiverdata[0]);//받는이 이름
-                reservdata.put("receiver_postno_0", receiveraddrnum);//받을분 우편번호
-                reservdata.put("receiver_addr_0", receiveraddrmid);//받을분 주소 중간내용
-                reservdata.put("receiver_detail_addr_0", receiveraddrdata[5]);//받을분 상세주소
-                reservdata.put("special_contents_0", receiverdata[3]);//메시지
-                if(receiverdata[4].equals("선불"))
-                    reservdata.put("pay_flag_0", "1");//지불방법 1=선불 2= 착불
-                else if(receiverdata[4].equals("착불"))
-                    reservdata.put("pay_flag_0", "2");
-
-//                SharedPreferences preferences = getSharedPreferences("reservationstate", MODE_PRIVATE);
-//                SharedPreferences.Editor editor = preferences.edit();
-//
-//                editor.putString("reservName",contentdata[2]);
-//                editor.putString("category",contentdata[0]);
-//                editor.putString("contentPrice",contentdata[1]);
-//                editor.putString("sender",senderdata[0]);
-//                editor.putString("senderPhone",senderdata[1]);
-//                editor.putString("senderAddr",senderdata[2]);
-//                editor.putString("receiver",receiverdata[0]);
-//                editor.putString("receiverPhone",receiverdata[1]);
-//                editor.putString("receiverAddr",receiverdata[2]);
-//                editor.putString("message",receiverdata[3]);
-//                editor.putString("howtopay",receiverdata[4]);
-//                editor.commit();
-
-                org.jsoup.Connection.Response reservationResponse = Jsoup.connect("https://www.cupost.co.kr/postbox/local/member/reservationReg.cupost")
-                        .method( org.jsoup.Connection.Method.POST)
-                        .timeout(7000)
-                        .header("User-Agent",USER_AGENT)
-                        .header("Referer","https://www.cupost.co.kr/postbox/main.cupost")
-                        .header("Connection","keep-alive")
-                        .header("Upgrade-Insecure-Requests","1")
-                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-                        .header("Accept-Encoding","gzip, deflate, br")
-                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-                        .ignoreContentType(true)
-                        .cookies(loginTryCookie)
-                        .data(reservdata)
-                        .execute();
-
-                Map<String, String> reservcookie = reservationResponse.cookies();
-
-                Document adminPageDocument = Jsoup.connect("https://www.cupost.co.kr/postbox/local/member/reservationList.cupost")
-                        .timeout(7000)
-                        .userAgent(USER_AGENT)
-                        .header("Upgrade-Insecure-Requests","1")
-                        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-                        .header("Accept-Encoding","gzip, deflate, br")
-                        .header("Accept-Language","ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
-                        .header("Referer", "https://www.cupost.co.kr/postbox/local/member/reservationReg.cupost")
-                        .header("Connection", "keep-alive")
-                        .cookies(loginTryCookie)
-                        .get();
-
-                Elements table = adminPageDocument.select("table[class=tableType2 mt10]");
-                Elements rows = table.select("tr");
-                Elements a;
-                for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
-                    Element row = rows.get(i);
-                    Elements cols = row.select("td");
-                    a = cols.select("a");
-
-//                    System.out.println("a만이니????"+a.get(0).text());
-                    num.add(a.get(0).text());
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return num;
-        }
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError 3333",e);
+                    }
+                    @Override
+                    public void onComplete()
+                    {
+                        Log.d(TAG, "onComplete: 4444444");
+                    }
+                });
     }
 
-    private class SaveData2 extends AsyncTask<String, Void, String> {
 
-        ProgressDialog progressDialog;
-        String errorString = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            progressDialog = ProgressDialog.show(CUReservationCheckPage.this,
-                    "Please Wait", null, true, true);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            progressDialog.dismiss();
-//            results.setText(result);
-            Log.d("TAG", "response - " + result);
-            Log.d("TAG",result.toString());
-            if (result == null){
-                Toast.makeText(CUReservationCheckPage.this, "error", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                if(result.toString().equals("success to insert sql")) {
-                    Toast.makeText(CUReservationCheckPage.this, "save", Toast.LENGTH_SHORT).show();
-
-                    SaveData2 saveData2 = new SaveData2();
-                    saveData2.execute(sender,receiver);
-                }
-                else if(result.toString().equals("fail to insert sql"))
-                    Toast.makeText(CUReservationCheckPage.this, "fail", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            String sender = params[0];
-            String receiver = params[1];
-
-            String serverURL = serverIP.serverIp+"/wimp/savereserv.php";
-            String postParameters = "sender=" + sender + "&receiver=" + receiver;
-
-            Log.d("TAG", postParameters);
-
-            try {
-                URL url = new URL(serverURL);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setReadTimeout(5000);
-                httpURLConnection.setConnectTimeout(5000);
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-
-                httpURLConnection.connect();
-
-                OutputStream outputStream = httpURLConnection.getOutputStream();
-                outputStream.write(postParameters.getBytes("UTF-8"));
-                outputStream.flush();
-                outputStream.close();
-
-                int responseStatusCode = httpURLConnection.getResponseCode();
-
-                Log.d("TAG", "response code - " + responseStatusCode);
-
-                InputStream inputStream;
-                if(responseStatusCode == HttpURLConnection.HTTP_OK) {
-                    inputStream = httpURLConnection.getInputStream();
-                }
-                else{
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                StringBuilder sb = new StringBuilder();
-                String line;
-
-                while((line = bufferedReader.readLine()) != null){
-                    sb.append(line);
-                }
-
-                bufferedReader.close();
-
-                return sb.toString();
-
-            } catch (Exception e) {
-
-                Log.d("TAG", "InsertData: Error ", e);
-
-                return new String("Error: " + e.getMessage());
-            }
-        }
-
-    }
-
-    private class SaveData extends AsyncTask<String, Void, String> {
-
-        ProgressDialog progressDialog;
-        String errorString = null;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            progressDialog = ProgressDialog.show(CUReservationCheckPage.this,
-                    "Please Wait", null, true, true);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            progressDialog.dismiss();
-//            results.setText(result);
-            Log.d("TAG", "response - " + result);
-            Log.d("TAG",result.toString());
-            if (result == null){
-                Toast.makeText(CUReservationCheckPage.this, "error", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                if(result.toString().equals("success to insert sql"))
-                    Toast.makeText(CUReservationCheckPage.this, "save", Toast.LENGTH_SHORT).show();
-                else if(result.toString().equals("fail to insert sql"))
-                    Toast.makeText(CUReservationCheckPage.this, "fail", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            String sender = params[0];
-            String senderphone = params[1];
-            String senderaddr = params[2];
-            String postcategory = params[3];
-            String postprice = params[4];
-            String postreservname = params[5];
-            String receiver = params[6];
-            String receiverphone = params[7];
-            String receiveraddr = params[8];
-            String message = params[9];
-            String howtopay = params[10];
-
-
-            String serverURL = serverIP.serverIp+"/wimp/savereservation.php";
-            String postParameters = "sender=" + sender + "&senderphone=" + senderphone + "&senderaddr=" + senderaddr + "&postcategory=" + postcategory + "&postprice=" + postprice +
-                    "&postreservname=" + postreservname + "&receiver=" + receiver + "&receiverphone=" + receiverphone + "&receiveraddr=" + receiveraddr + "&message=" + message + "&howtopay=" + howtopay;
-
-            Log.d("TAG", postParameters);
-
-            try {
-                URL url = new URL(serverURL);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setReadTimeout(5000);
-                httpURLConnection.setConnectTimeout(5000);
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-
-                httpURLConnection.connect();
-
-                OutputStream outputStream = httpURLConnection.getOutputStream();
-                outputStream.write(postParameters.getBytes("UTF-8"));
-                outputStream.flush();
-                outputStream.close();
-
-                int responseStatusCode = httpURLConnection.getResponseCode();
-
-                Log.d("TAG", "response code - " + responseStatusCode);
-
-                InputStream inputStream;
-                if(responseStatusCode == HttpURLConnection.HTTP_OK) {
-                    inputStream = httpURLConnection.getInputStream();
-                }
-                else{
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                StringBuilder sb = new StringBuilder();
-                String line;
-
-                while((line = bufferedReader.readLine()) != null){
-                    sb.append(line);
-                }
-
-                bufferedReader.close();
-
-                return sb.toString();
-
-            } catch (Exception e) {
-
-                Log.d("TAG", "InsertData: Error ", e);
-
-                return new String("Error: " + e.getMessage());
-            }
-        }
-
-    }
 }

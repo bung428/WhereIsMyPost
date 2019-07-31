@@ -6,7 +6,16 @@ public class RecyclerItem {
     private String comp;
     private String info;
     private String day;
-//    private int image;
+    private String num;
+
+    public String getNum() {
+        return num;
+    }
+
+    public void setNum(String num) {
+        this.num = num;
+    }
+    //    private int image;
 
     public RecyclerItem (String level, String date, String comp, String info, String day){
         this.level = level;

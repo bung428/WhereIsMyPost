@@ -44,6 +44,17 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> loginUser;
@@ -53,11 +64,14 @@ public class MainActivity extends AppCompatActivity {
     MyRecyclerViewAdapter adapter;
 
     ServerIP serverIP;
+    APIService apiService;
+
+    CJTask cjTask;
 
     ImageButton imageBtnList,imageBtnChart,imageBtnMypage,imageBtnChat, imageBtnReserve;
     RecyclerView recyclerView;
 
-    String msg, kakaoname, postLogin,mJsonString,day,getdate,mall,app_mall, loginId;
+    String msg, kakaoname, postLogin,mJsonString,day,getdate,mall,app_mall, loginId, TAG = "메인 엑티비티";
     String[] appmall={"pang","gmarket"};
     Boolean crawl=false;
 
@@ -162,7 +176,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(View v, int position) {
                     Log.d("main", "click");
-                    String intentdata = mItems.get(position).getInfo() + "##" + mItems.get(position).getComp();
+                    Log.d(TAG, "번호있냐??: "+mItems.get(position).getNum());
+                    String intentdata = mItems.get(position).getNum()+"##"+mItems.get(position).getInfo() + "##" + mItems.get(position).getComp();
                     Toast.makeText(getApplication(), intentdata, Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(MainActivity.this, DetailPost.class);
                     i.putExtra("whatdata", intentdata);
@@ -176,18 +191,28 @@ public class MainActivity extends AppCompatActivity {
             }
             ));
 
+            // 왠지 여기서 뷰 처리하는 거 같네 cj꺼
             try {
-                SharedPreferences preferencess = getSharedPreferences("post", MODE_PRIVATE);
-                Set<String> sets = preferencess.getStringSet("postInfo", null);
-                postInfo = new ArrayList<>(sets);
-
-                Log.d("post", "in mainin main" + postInfo.get(0).toString());
-                String[] Data = postInfo.get(0).split("##");
-                Log.d("post", "in main" + Data[0] + Data[1]);
-                if (Data[1].equals("CJ대한통운")) {
-                    CJTask cjTask = new CJTask();
-                    cjTask.execute(Data[0], Data[1]);
+                cjTask = new CJTask();
+                Intent cj_intent = getIntent();
+                // postSearch : 송장번호 검색해서 intent로 넘어온 송장번호 값이 있을 때
+                if (cj_intent != null) {
+                    cjTask.execute(cj_intent.getStringExtra("postNum"), cj_intent.getStringExtra("company"), loginId);
                 }
+                // 송장번호 검색을 하지않고도 이전에 송장번호 검색기록이 있어서 보여줄 리스트가 필요할 때
+                Log.d(TAG, "onCreate: 하위!!!!!!!!!!!!!!!!!!");
+                searchCJData(loginId);
+
+//                SharedPreferences preferencess = getSharedPreferences("post", MODE_PRIVATE);
+//                Set<String> sets = preferencess.getStringSet("postInfo", null);
+//                postInfo = new ArrayList<>(sets);
+//
+//                Log.d("post", "in mainin main" + postInfo.get(0).toString());
+//                String[] Data = postInfo.get(0).split("##");
+//                Log.d("post", "in main" + Data[0] + Data[1]);
+//                if (Data[1].equals("CJ대한통운")) {
+//                    cjTask.execute(Data[0], Data[1]);
+//                }
             } catch (NullPointerException e) {
 
             }
@@ -410,6 +435,143 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void searchCJData (String userId) {
+        Observable.just("")
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .map(new Function<String, Boolean>()
+                {
+                    @Override
+                    public Boolean apply(String s) throws Exception
+                    {
+                        try
+                        {
+                            apiService = APIClient.getClient1().create(APIService.class);
+                            Call<ResponseBody> callServer = apiService.searchCJ(userId);
+
+                            callServer.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        String msg = response.body().string();
+                                        Log.d(TAG, "onResponse: 서버로부터 응답 in retrofit "+msg);
+
+                                        JSONArray jsonArray = new JSONArray(msg);
+
+                                        for (int i = jsonArray.length()-1; i < jsonArray.length(); i++) {
+                                            JSONObject item = jsonArray.getJSONObject(i);
+
+                                            String p_num = item.getString("p_num");
+                                            String p_send = item.getString("p_send");
+                                            String p_recv = item.getString("p_recv");
+                                            String p_info = item.getString("p_info");
+                                            String p_level = item.getString("p_level");
+                                            String p_date = item.getString("p_date");
+                                            String p_where = item.getString("p_where");
+                                            String p_comp = item.getString("p_comp");
+
+
+                                            list_name.add(p_info);
+
+                                            getdate = p_date;
+                                            String[] splitdate = getdate.split(" ");
+                                            Log.d("post", "splitdate : " + splitdate[0]);
+                                            if (!getdate.equals("")) {
+                                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                                Date date = null;
+                                                try {
+                                                    date = dateFormat.parse(splitdate[0]);
+                                                } catch (ParseException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                Calendar calendar = Calendar.getInstance();
+                                                calendar.setTime(date);
+                                                int dayNum = calendar.get(Calendar.DAY_OF_WEEK);
+                                                switch (dayNum) {
+                                                    case 1:
+                                                        day = "Sun";
+                                                        break;
+                                                    case 2:
+                                                        day = "Mon";
+                                                        break;
+                                                    case 3:
+                                                        day = "Tue";
+                                                        break;
+                                                    case 4:
+                                                        day = "Wed";
+                                                        break;
+                                                    case 5:
+                                                        day = "Thu";
+                                                        break;
+                                                    case 6:
+                                                        day = "Fri";
+                                                        break;
+                                                    case 7:
+                                                        day = "Sat";
+                                                        break;
+
+                                                }
+                                                Log.d("post", "day:" + day);
+                                                Log.d("송장번호를 통해 얻음", p_level+p_date+p_comp+p_info);
+                                                RecyclerItem recyclerItem = new RecyclerItem(p_level, p_date, p_comp, p_info, day);
+                                                recyclerItem.setNum(p_num);
+                                                mItems.add(recyclerItem);
+                                                adapter = new MyRecyclerViewAdapter(getApplicationContext(), mItems);
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                            recyclerView.setAdapter(adapter);
+                                            adapter.notifyDataSetChanged();
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    // 콜백 실패
+                                    Log.d(TAG, "onFailure: 콜백 실패");
+                                    Log.e(TAG, "onFailure: ", t);
+                                }
+                            });
+                        }
+                        catch(Exception e) {
+                            // 통신 실패
+
+                            Log.d(TAG, "onFailure: 통신 실패");
+                            Log.e(TAG, "apply: ", e);
+                        }
+
+                        return true;
+                    }
+                }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Boolean>()
+                {
+                    @Override
+                    public void onSubscribe(Disposable d)
+                    {
+                        Log.d(TAG, "onSubscribe : "+d);
+                    }
+                    @Override
+                    public void onNext(Boolean s)
+                    {
+                        Log.d(TAG, "onNext: "+s);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "onError: "+e);
+                    }
+                    @Override
+                    public void onComplete()
+                    {
+                    }
+                });
+    }
+
     private class GetData extends AsyncTask<String, Void, String> {
         ProgressDialog progressDialog;
         String errorString = null;
@@ -591,76 +753,79 @@ public class MainActivity extends AppCompatActivity {
                 mJsonString = result.toString();
                 Log.d("post", "json"+mJsonString);
 
-                try {
-                    JSONArray jsonArray = new JSONArray(mJsonString);
+                if (mJsonString != "nothing") {
+                    try {
+                        JSONArray jsonArray = new JSONArray(mJsonString);
 //                    String[] pi_date = new String[jsonArray.length()];
 //                    String[] pi_level = new String[jsonArray.length()];
-                    for (int i = jsonArray.length()-1; i < jsonArray.length(); i++) {
-                        JSONObject item = jsonArray.getJSONObject(i);
+                        for (int i = jsonArray.length() - 1; i < jsonArray.length(); i++) {
+                            JSONObject item = jsonArray.getJSONObject(i);
 
-                        String pi_num = item.getString("num");
-                        String pi_send = item.getString("send");
-                        String pi_recv = item.getString("recv");
-                        String pi_info = item.getString("info");
-                        String pi_level = item.getString("level");
-                        String pi_date = item.getString("date");
-                        String pi_where = item.getString("where");
-                        String pi_comp = item.getString("comp");
+                            String p_num = item.getString("p_num");
+                            String p_send = item.getString("p_send");
+                            String p_recv = item.getString("p_recv");
+                            String p_info = item.getString("p_info");
+                            String p_level = item.getString("p_level");
+                            String p_date = item.getString("p_date");
+                            String p_where = item.getString("p_where");
+                            String p_comp = item.getString("p_comp");
 
-                        list_name.add(pi_info);
+                            list_name.add(p_info);
 
-                        getdate = pi_date;
-                        String[] splitdate = getdate.split(" ");
-                        Log.d("post", "splitdate : " + splitdate[0]);
-                        if (!getdate.equals("")) {
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                            Date date = null;
-                            try {
-                                date = dateFormat.parse(splitdate[0]);
-                            } catch (ParseException e) {
-                                e.printStackTrace();
+                            getdate = p_date;
+                            String[] splitdate = getdate.split(" ");
+                            Log.d("post", "splitdate : " + splitdate[0]);
+                            if (!getdate.equals("")) {
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                Date date = null;
+                                try {
+                                    date = dateFormat.parse(splitdate[0]);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTime(date);
+                                int dayNum = calendar.get(Calendar.DAY_OF_WEEK);
+                                switch (dayNum) {
+                                    case 1:
+                                        day = "Sun";
+                                        break;
+                                    case 2:
+                                        day = "Mon";
+                                        break;
+                                    case 3:
+                                        day = "Tue";
+                                        break;
+                                    case 4:
+                                        day = "Wed";
+                                        break;
+                                    case 5:
+                                        day = "Thu";
+                                        break;
+                                    case 6:
+                                        day = "Fri";
+                                        break;
+                                    case 7:
+                                        day = "Sat";
+                                        break;
+
+                                }
+                                Log.d("post", "day:" + day);
+                                Log.d("송장번호를 통해 얻음", p_level + p_date + p_comp + p_info);
+                                RecyclerItem recyclerItem = new RecyclerItem(p_level, p_date, p_comp, p_info, day);
+                                recyclerItem.setNum(p_num);
+                                mItems.add(recyclerItem);
+                                adapter = new MyRecyclerViewAdapter(getApplicationContext(), mItems);
+                                adapter.notifyDataSetChanged();
                             }
-                            Calendar calendar = Calendar.getInstance();
-                            calendar.setTime(date);
-                            int dayNum = calendar.get(Calendar.DAY_OF_WEEK);
-                            switch (dayNum) {
-                                case 1:
-                                    day = "Sun";
-                                    break;
-                                case 2:
-                                    day = "Mon";
-                                    break;
-                                case 3:
-                                    day = "Tue";
-                                    break;
-                                case 4:
-                                    day = "Wed";
-                                    break;
-                                case 5:
-                                    day = "Thu";
-                                    break;
-                                case 6:
-                                    day = "Fri";
-                                    break;
-                                case 7:
-                                    day = "Sat";
-                                    break;
-
-                            }
-                            Log.d("post", "day:" + day);
-                            Log.d("송장번호를 통해 얻음", pi_level+pi_date+pi_comp+pi_info);
-                            RecyclerItem recyclerItem = new RecyclerItem(pi_level, pi_date, pi_comp, pi_info, day);
-                            mItems.add(recyclerItem);
-                            adapter = new MyRecyclerViewAdapter(getApplicationContext(), mItems);
+                            recyclerView.setAdapter(adapter);
                             adapter.notifyDataSetChanged();
                         }
-                        recyclerView.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-                    }
-                } catch (JSONException e) {
-                    Log.d("aaa", "showResult : ", e);
-                } catch (NullPointerException e) {
+                    } catch (JSONException e) {
+                        Log.d("aaa", "showResult : ", e);
+                    } catch (NullPointerException e) {
 
+                    }
                 }
 
             }
@@ -668,10 +833,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
-            String pi_num = params[0];
-            String pi_comp = params[1];
+            String p_num = params[0];
+            String p_comp = params[1];
+            String p_userid = params[2];
             String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
-            String postParameters = "num=" + pi_num + "&company=" + pi_comp;
+            String postParameters = "num=" + p_num + "&company=" + p_comp + "&userid=" + p_userid;
 
             Log.d("post", postParameters);
             try {

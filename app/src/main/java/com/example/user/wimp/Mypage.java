@@ -37,6 +37,8 @@ import okhttp3.Response;
 
 public class Mypage extends AppCompatActivity {
 
+    private String TAG = "마이페이지";
+
     private HttpConnectionARimage httpConn = HttpConnectionARimage.getInstance();
 
     ArrayList<String> loginUser;
@@ -198,7 +200,8 @@ public class Mypage extends AppCompatActivity {
             Log.d("TAG", "response - " + result);
 
             if (result == null){
-                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "onPostExecute: getData error");
+//                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
             }
             else {
                 String getjson = result.toString();
@@ -302,7 +305,8 @@ public class Mypage extends AppCompatActivity {
             Log.d("TAG", "response - " + result);
 
             if (result == null){
-                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "onPostExecute: updateImage error");
+//                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
             }
             else {
                 if(result.equals("true")) {
@@ -346,7 +350,8 @@ public class Mypage extends AppCompatActivity {
             String message = result.toString();
             Log.d("업데이트 인포", message);
             if (result == null){
-                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "onPostExecute: updateInfo error");
+//                Toast.makeText(Mypage.this, "error", Toast.LENGTH_SHORT).show();
             }
             else {
                 if (message.equals("success")){

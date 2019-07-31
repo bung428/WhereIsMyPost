@@ -1,6 +1,7 @@
 package com.example.user.wimp;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -14,6 +15,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,8 +45,9 @@ public class DetailPost extends AppCompatActivity {
     private ArrayList<RecyclerItemPostInfo> mItems = new ArrayList<>();
     PostRecyclerViewAdapter adapter;
 
-    String mJsonString,infor,dates,comp_num,recvs,sends,wheres;
+    String mJsonString,infor,dates,comp_num,recvs,sends,wheres,TAG="디테일포스트";
     String[] datasep;
+    String loginID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,39 +62,54 @@ public class DetailPost extends AppCompatActivity {
         whereget=findViewById(R.id.whereget);
         rvPost=findViewById(R.id.rvPost);
 
+        try {
+            SharedPreferences preferences = getSharedPreferences("auto", Context.MODE_PRIVATE);
+
+            Set<String> set = preferences.getStringSet("userinfo", null);
+            ArrayList<String> loginUser = new ArrayList<>(set);
+
+            Log.d("checkbox", loginUser.get(0).toString());
+            String[] loginData = loginUser.get(0).split("@@@@");
+            loginID = loginData[0];
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
         setData();
         setRecyclerView();
 
         Intent i=getIntent();
         if(i!=null) {
             String data=i.getStringExtra("whatdata");
-            Log.d("crawl", data);
+            Log.d(TAG, "리싸이클러뷰 왓데이타 값 : "+ data);
             datasep=data.split("##");
-            switch (datasep[1]){
+            switch (datasep[2]){
                 case "pang":
                     break;
                 case "gmarket":
-                    Log.d("crawl","in detail Activity "+datasep[0]+datasep[1]+" get");
+                    Log.d(TAG,"in detail Activity "+datasep[0]+datasep[1]+" get");
                     GetMallData  getMallData=new GetMallData();
                     getMallData.execute(datasep[1],datasep[0]);
                     break;
                 case "CJ대한통운":
-                    Log.d("crawl","in detail Activity "+datasep[0]+datasep[1]+"get");
-                    try {
-                        SharedPreferences preferencess = getSharedPreferences("post",MODE_PRIVATE);
-                        Set<String> sets = preferencess.getStringSet("postInfo", null);
-                        postInfo = new ArrayList<>(sets);
-
-                        Log.d("post", "in main"+postInfo.get(0).toString());
-                        String[] Data = postInfo.get(0).split("##");
-                        Log.d("post","in main"+Data[0]+Data[1]);
-                        if(Data[1].equals("CJ대한통운")) {
-                            CJTask cjTask = new CJTask();
-                            cjTask.execute(Data[0], Data[1]);
-                        }
-                    }catch (NullPointerException e){
-
-                    }
+                    CJTask cjTask = new CJTask();
+                    cjTask.execute(loginID, datasep[0], datasep[2]);
+                    // 여기를 고쳐하는구만!
+//                    try {
+//                        SharedPreferences preferencess = getSharedPreferences("post",MODE_PRIVATE);
+//                        Set<String> sets = preferencess.getStringSet("postInfo", null);
+//                        postInfo = new ArrayList<>(sets);
+//
+//                        Log.d("post", "in main"+postInfo.get(0).toString());
+//                        String[] Data = postInfo.get(0).split("##");
+//                        Log.d("post","in main"+Data[0]+Data[1]);
+//                        if(Data[1].equals("CJ대한통운")) {
+//                            cjTask = new CJTask();
+//                            cjTask.execute(Data[0], Data[1]);
+//                        }
+//                    }catch (NullPointerException e){
+//
+//                    }
                     break;
                 case "한진택배":
                     break;
@@ -299,37 +319,29 @@ public class DetailPost extends AppCompatActivity {
                 Toast.makeText(DetailPost.this, "already have", Toast.LENGTH_SHORT).show();
             } else {
                 mJsonString = result.toString();
-                Log.d("post", "json"+mJsonString);
-
+                Log.d(TAG, "서버로부터 응답"+mJsonString);
                 try {
-                    JSONArray jsonArray = new JSONArray(mJsonString);
-                    String[] pi_date = new String[jsonArray.length()];
-                    String[] pi_level = new String[jsonArray.length()];
-                    String[] pi_where = new String[jsonArray.length()];
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject item = jsonArray.getJSONObject(i);
+                    Gson gsonObject = new Gson();
+                    ArrayList<DetailObject> arrayList = gsonObject.fromJson(mJsonString, new TypeToken<ArrayList<DetailObject>>(){}.getType());
 
-                        String pi_num = item.getString("num");
-                        String pi_send = item.getString("send");
-                        String pi_recv = item.getString("recv");
-                        String pi_info = item.getString("info");
-                        pi_level[i] = item.getString("level");
-                        pi_date[i] = item.getString("date");
-                        pi_where[i] = item.getString("where");
-                        String pi_comp = item.getString("comp");
-                        infor=pi_info;
-                        dates=pi_date[jsonArray.length()-1];
-                        comp_num = pi_comp+" / "+pi_num;
-                        recvs=pi_recv;
-                        sends=pi_send;
-                        wheres=pi_where[jsonArray.length()-1];
-
-                        RecyclerItemPostInfo recyclerItemPostInfo = new RecyclerItemPostInfo(pi_date[i], pi_where[i], pi_level[i]);
-                        mItems.add(recyclerItemPostInfo);
-                        adapter = new PostRecyclerViewAdapter(getApplicationContext(), mItems);
-                        adapter.notifyDataSetChanged();
+                    for (int i=0; i<arrayList.size(); i++) {
+                        Log.d(TAG, "arrayList: "+arrayList.get(i).getP_info() + arrayList.get(i).getP_date());
                     }
-                    Log.d("crawl", "in detail "+infor+dates+comp_num+recvs+sends+pi_where[jsonArray.length()-1]);
+//
+                    infor=arrayList.get(0).getP_info();
+                    dates=arrayList.get(0).getP_date();
+                    comp_num = arrayList.get(0).getP_comp()+" / "+arrayList.get(0).getP_num();
+                    recvs=arrayList.get(0).getP_recv();
+                    sends=arrayList.get(0).getP_send();
+                    wheres=arrayList.get(0).getP_where();
+
+                    RecyclerItemPostInfo recyclerItemPostInfo;
+                    for (int i=0; i<arrayList.size(); i++) {
+                        recyclerItemPostInfo = new RecyclerItemPostInfo(arrayList.get(i).getP_date(), arrayList.get(i).getP_where(), arrayList.get(i).getP_level());
+                        mItems.add(recyclerItemPostInfo);
+                    }
+                    adapter = new PostRecyclerViewAdapter(getApplicationContext(), mItems);
+                    adapter.notifyDataSetChanged();
 
                     if(!infor.equals("")) {
                         post_info.setText(infor);
@@ -342,8 +354,6 @@ public class DetailPost extends AppCompatActivity {
 
                     rvPost.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
-                } catch (JSONException e) {
-                    Log.d("aaa", "showResult : ", e);
                 } catch (NullPointerException e) {
 
                 }
@@ -353,10 +363,11 @@ public class DetailPost extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
-            String pi_num = params[0];
-            String pi_comp = params[1];
-            String serverURL = serverIP.serverIp+"/wimp/cjcrawl.php";
-            String postParameters = "num=" + pi_num + "&company=" + pi_comp;
+            String pi_userid = params[0];
+            String pi_num = params[1];
+            String pi_comp = params[2];
+            String serverURL = serverIP.serverIp+"/wimp/cjcrawldetail.php";
+            String postParameters = "userid=" + pi_userid + "&num=" + pi_num + "&company=" + pi_comp;
 
             Log.d("post", postParameters);
             try {
